@@ -1,0 +1,26 @@
+export declare type HVector = string[];
+export declare class HoParameterSet {
+    lowQueryParam: HoParameter[];
+    highQueryParam: HoParameter[];
+    visible: boolean;
+    toString(): string;
+    remove(): void;
+    readonly depth: number;
+    readonly length: number;
+    readonly isEmpty: boolean;
+    readonly templates: string[][];
+    add(x: HVector, y: HVector): void;
+    trim(simPct?: number, idPct?: number, cvPct?: number, eValue?: number, definitive?: boolean): void;
+    [Symbol.iterator](): IterableIterator<[HoParameter, HoParameter]>;
+}
+export declare class HoParameter {
+    data: HVector;
+    valid: boolean;
+    constructor(hVector: HVector);
+    readonly length: number;
+    readonly template: string;
+    readonly simPct: number;
+    readonly idPct: number;
+    readonly cvPct: number;
+    readonly eValue: number;
+}

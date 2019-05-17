@@ -1,0 +1,34 @@
+{
+    "compilerOptions": {
+      "allowJs": false,
+      "baseUrl": ".",
+      "lib": [
+        "es2015",
+        "es2016",
+        "esnext.asynciterable",
+        "dom"
+      ],
+      "listEmittedFiles": true,
+      "listFiles": false,
+      "maxNodeModuleJsDepth": 10,
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "outDir": "./build/",
+      "paths": {
+        "*": [
+          "node_modules/"
+        ]
+      },
+      "preserveConstEnums": true,
+      "removeComments": false,
+      "target": "esnext",
+      "esModuleInterop": true
+    },
+    "files": [ // path to the files to compile
+        "./ts/src/OmegaTopology.ts"
+    ],
+    "exclude": [
+      // "../taskobject"
+    ]
+    /* Enables experimental support for emitting type metadata for decorators. */
+  }

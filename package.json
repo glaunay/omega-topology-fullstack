@@ -1,0 +1,24 @@
+{
+  "name": "omega-topology-fullstack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "graphlib": "^2.1.7",
+    "md5": "^2.2.1",
+    "python-enumerate": "^1.0.1",
+    "python-zip": "^1.0.5",
+    "reversible-key-map": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/graphlib": "^2.1.5",
+    "@types/md5": "^2.1.33",
+    "@types/progress": "^2.0.3"
+  }
+}
