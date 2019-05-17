@@ -1,10 +1,10 @@
 import OmegaTopology from './OmegaTopology';
-import * as HomologyTree from './HomologyTree';
+import HomologyTree, { HomologChildren, HomologInfo } from './HomologyTree';
 import { HoParameterSet, HoParameter, HVector } from './HoParameter';
-import * as PSICQuic from './PSICQuic';
-import * as PSICQuicData from './PSICQuicData';
-import * as PartnersMap from './PartnersMap';
-import * as MitabTopology from './MitabTopology';
-import * as MDTree from './MDTree';
+import PSICQuic, { PSQDataHolder } from './PSICQuic';
+import { PSQField, PSQData, PSQDatum } from './PSICQuicData';
+import PartnersMap from './PartnersMap';
+import MitabTopology from './MitabTopology';
+import { MDNode, MDTree, DNTree } from './MDTree';
 export default OmegaTopology;
-export { PSICQuic, PSICQuicData, HoParameterSet, HoParameter, HVector, HomologyTree, PartnersMap, MitabTopology, MDTree };
+export { PSICQuic, PSQDataHolder, PSQField, PSQData, PSQDatum, HoParameterSet, HoParameter, HVector, HomologyTree, HomologChildren, HomologInfo, PartnersMap, MitabTopology, MDNode, MDTree, DNTree };
