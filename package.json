@@ -14,11 +14,12 @@
     "md5": "^2.2.1",
     "python-enumerate": "^1.0.1",
     "python-zip": "^1.0.5",
-    "reversible-key-map": "^1.0.2"
-  },
-  "devDependencies": {
+    "reversible-key-map": "^1.0.2",
     "@types/graphlib": "^2.1.5",
     "@types/md5": "^2.1.33",
     "@types/progress": "^2.0.3"
+  },
+  "devDependencies": {
+    "node-fetch": "^2.6.0"
   }
 }
