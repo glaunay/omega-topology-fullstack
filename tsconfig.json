@@ -25,7 +25,7 @@
       "esModuleInterop": true
     },
     "files": [ // path to the files to compile
-        "./ts/src/OmegaTopology.ts"
+        "./ts/src/main.ts"
     ],
     "exclude": [
       // "../taskobject"
