@@ -156,7 +156,7 @@ class OmegaTopology {
     }
     initFromSerialized(obj) {
         this.ajdTree = MDTree_1.MDTree.from(obj.tree, (_, value) => {
-            if ("lowQueryParam" in value && "highQueryParam" in value) {
+            if (typeof value === "object" && "lowQueryParam" in value && "highQueryParam" in value) {
                 return HoParameter_1.HoParameterSet.from(value);
             }
             return value;

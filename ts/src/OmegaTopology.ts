@@ -214,7 +214,7 @@ export default class OmegaTopology {
 
     protected initFromSerialized(obj: SerializedOmegaTopology) {
         this.ajdTree = MDTree.from(obj.tree, (_, value) => {
-            if ("lowQueryParam" in value && "highQueryParam" in value) {
+            if (typeof value === "object" && "lowQueryParam" in value && "highQueryParam" in value) {
                 return HoParameterSet.from(value);
             }
             return value;
