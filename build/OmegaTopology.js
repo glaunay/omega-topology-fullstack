@@ -14,12 +14,13 @@ const md5_1 = __importDefault(require("md5"));
 class OmegaTopology {
     constructor(homologyTree, mitabObj) {
         this.ajdTree = new MDTree_1.MDTree(false);
+        this.init_promise = Promise.resolve();
         this.hData = homologyTree;
         this.baseTopology = mitabObj;
         this.G = new graphlib_1.Graph({ directed: false });
     }
     init() {
-        return this.hData.init();
+        return this.init_promise;
     }
     prune(renew = true, max_distance = 5, ...seeds) {
         console.log(seeds);
@@ -151,19 +152,39 @@ class OmegaTopology {
         }
         return JSON.stringify(obj);
     }
+    initFromSerialized(obj) {
+        this.ajdTree = MDTree_1.MDTree.from(obj.tree);
+        this.G = graphlib_1.json.read(obj.graph);
+        if (obj.homolog) {
+            this.hData = HomologyTree_1.default.from(obj.homolog);
+        }
+        return this;
+    }
     static from(serialized) {
         const obj = JSON.parse(serialized);
+        OmegaTopology.checkSerializedObject(obj);
+        const newobj = new OmegaTopology;
+        return newobj.initFromSerialized(obj);
+    }
+    static checkSerializedObject(obj) {
+        if (!OmegaTopology.isASerializedOmegaTopology(obj)) {
+            throw new Error("Object is not omegatopology serialization");
+        }
         const supported = [1];
         if (!supported.includes(obj.version)) {
             throw new Error("Unsupported OmegaTopology version: " + obj.version);
         }
-        const newobj = new OmegaTopology(undefined);
-        newobj.ajdTree = MDTree_1.MDTree.from(obj.tree);
-        newobj.G = graphlib_1.json.read(obj.graph);
-        if (obj.homolog) {
-            newobj.hData = HomologyTree_1.default.from(obj.homolog);
-        }
-        return newobj;
+    }
+    static isASerializedOmegaTopology(obj) {
+        return "version" in obj && "tree" in obj && "graph" in obj;
+    }
+    fromDownload(url) {
+        return this.init_promise = fetch(url)
+            .then(r => r.json())
+            .then(obj => {
+            OmegaTopology.checkSerializedObject(obj);
+            this.initFromSerialized(obj);
+        });
     }
     makeGraph() {
         const g = new graphlib_1.Graph({ directed: false });

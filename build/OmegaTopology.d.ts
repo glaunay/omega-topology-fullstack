@@ -3,10 +3,17 @@ import { Graph } from "graphlib";
 import { HoParameterSet, HoParameter } from "./HoParameter";
 import { MDTree } from './MDTree';
 import { MitabTopology } from "./MitabTopology";
+interface SerializedOmegaTopology {
+    graph: Object;
+    tree: string;
+    homolog?: string;
+    version: number;
+}
 export default class OmegaTopology {
     protected hData: HomologTree;
     protected ajdTree: MDTree<HoParameterSet>;
     protected baseTopology?: MitabTopology;
+    protected init_promise: Promise<void>;
     /**
      * GRAPH
      * Node type: string
@@ -14,7 +21,7 @@ export default class OmegaTopology {
      * Edge data / label: HoParameterSet
      */
     protected G: Graph;
-    constructor(homologyTree: HomologTree, mitabObj?: MitabTopology);
+    constructor(homologyTree?: HomologTree, mitabObj?: MitabTopology);
     init(): Promise<void>;
     prune(renew?: boolean, max_distance?: number, ...seeds: string[]): Graph;
     [Symbol.iterator](): IterableIterator<[string, string, HoParameterSet]>;
@@ -30,7 +37,11 @@ export default class OmegaTopology {
     };
     dumpGraph(trim_invalid?: boolean): string;
     serialize(with_homology_tree?: boolean): string;
+    protected initFromSerialized(obj: SerializedOmegaTopology): this;
     static from(serialized: string): OmegaTopology;
+    protected static checkSerializedObject(obj: any): void;
+    protected static isASerializedOmegaTopology(obj: any): boolean;
+    fromDownload(url: string): Promise<void>;
     protected makeGraph(): Graph;
     readonly edgeNumber: number;
     readonly nodeNumber: number;
@@ -51,3 +62,4 @@ export default class OmegaTopology {
     templateZipPair(): MDTree<boolean>;
     protected weightProjector(): void;
 }
+export {};
