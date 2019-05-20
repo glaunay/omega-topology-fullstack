@@ -300,6 +300,10 @@ export default class OmegaTopology {
         return nodes;
     }
 
+    get psi() {
+        return this.baseTopology.psi;
+    }
+
     protected showNode(node: string) {
         const node_value = Object.entries(this.ajdTree.getNode(node));
 
@@ -321,7 +325,7 @@ export default class OmegaTopology {
     }
 
     get hDataLength() {
-        return this.hData.length;
+        return this.hData ? this.hData.length : 0;
     }
 
     async buildEdgesReverse(bar: any /** Progress bar (any for not importing Progress in clients) */) {

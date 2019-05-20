@@ -24,6 +24,9 @@ class MitabTopology {
     get [Symbol.toStringTag]() {
         return "MitabTopology";
     }
+    get psi() {
+        return this.psiq;
+    }
 }
 exports.MitabTopology = MitabTopology;
 class LocalMitab extends MitabTopology {

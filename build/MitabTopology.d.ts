@@ -8,6 +8,7 @@ export declare class MitabTopology {
     readonly length: number;
     get(k1: string): PSQData[];
     readonly [Symbol.toStringTag]: string;
+    readonly psi: PSICQuic;
 }
 export default class LocalMitab extends MitabTopology {
     protected url: string;

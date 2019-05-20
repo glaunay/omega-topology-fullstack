@@ -29,6 +29,10 @@ export class MitabTopology {
     get [Symbol.toStringTag]() {
         return "MitabTopology";
     }
+
+    get psi() {
+        return this.psiq;
+    }
 }
 
 export default class LocalMitab extends MitabTopology {

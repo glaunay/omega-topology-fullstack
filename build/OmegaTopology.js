@@ -221,6 +221,9 @@ class OmegaTopology {
         }
         return nodes;
     }
+    get psi() {
+        return this.baseTopology.psi;
+    }
     showNode(node) {
         const node_value = Object.entries(this.ajdTree.getNode(node));
         for (const [, edge] of node_value) {
@@ -237,7 +240,7 @@ class OmegaTopology {
         return this.ajdTree.length;
     }
     get hDataLength() {
-        return this.hData.length;
+        return this.hData ? this.hData.length : 0;
     }
     async buildEdgesReverse(bar /** Progress bar (any for not importing Progress in clients) */) {
         const inters = new PartnersMap_1.default({

@@ -3,6 +3,7 @@ import { Graph } from "graphlib";
 import { HoParameterSet, HoParameter } from "./HoParameter";
 import { MDTree } from './MDTree';
 import { MitabTopology } from "./MitabTopology";
+import PSICQuic from "./PSICQuic";
 interface SerializedOmegaTopology {
     graph: Object;
     tree: string;
@@ -48,6 +49,7 @@ export default class OmegaTopology {
     readonly nodes: {
         [id: string]: Set<any>;
     };
+    readonly psi: PSICQuic;
     protected showNode(node: string): void;
     protected hideNode(node: string): void;
     readonly length: number;
