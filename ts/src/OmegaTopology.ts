@@ -24,6 +24,7 @@ export default class OmegaTopology {
     protected hData: HomologTree;
     protected ajdTree: MDTree<HoParameterSet> = new MDTree(false);
     protected baseTopology?: MitabTopology; 
+    protected init_promise = Promise.resolve();
     
     /**
      * GRAPH
@@ -34,14 +35,14 @@ export default class OmegaTopology {
     protected G: Graph;
 
 
-    constructor(homologyTree: HomologTree, mitabObj?: MitabTopology) {
+    constructor(homologyTree?: HomologTree, mitabObj?: MitabTopology) {
         this.hData = homologyTree;
         this.baseTopology = mitabObj;
         this.G = new Graph({directed: false});
     }
 
     init() {
-        return this.hData.init();
+        return this.init_promise;
     }
 
     prune(renew = true, max_distance: number = 5, ...seeds: string[]) : Graph {
@@ -210,23 +211,49 @@ export default class OmegaTopology {
         return JSON.stringify(obj);
     }
 
+    protected initFromSerialized(obj: SerializedOmegaTopology) {
+        this.ajdTree = MDTree.from(obj.tree) as MDTree<HoParameterSet>;
+        this.G = GraphJSON.read(obj.graph);
+
+        if (obj.homolog) {
+            this.hData = HomologTree.from(obj.homolog);
+        }
+
+        return this;
+    }
+
     static from(serialized: string) : OmegaTopology {
         const obj: SerializedOmegaTopology = JSON.parse(serialized);
+
+        OmegaTopology.checkSerializedObject(obj);
+
+        const newobj = new OmegaTopology;
+        
+        return newobj.initFromSerialized(obj);
+    }
+
+    protected static checkSerializedObject(obj: any) {
+        if (!OmegaTopology.isASerializedOmegaTopology(obj)) {
+            throw new Error("Object is not omegatopology serialization");
+        }
 
         const supported = [1];
         if (!supported.includes(obj.version)) {
             throw new Error("Unsupported OmegaTopology version: " + obj.version);
         }
+    }
 
-        const newobj = new OmegaTopology(undefined);
-        newobj.ajdTree = MDTree.from(obj.tree) as MDTree<HoParameterSet>;
-        newobj.G = GraphJSON.read(obj.graph);
+    protected static isASerializedOmegaTopology(obj: any): boolean {
+        return "version" in obj && "tree" in obj && "graph" in obj;
+    }
 
-        if (obj.homolog) {
-            newobj.hData = HomologTree.from(obj.homolog);
-        }
-
-        return newobj;
+    fromDownload(url: string) {
+        return this.init_promise = fetch(url)
+            .then(r => r.json())
+            .then(obj => {
+                OmegaTopology.checkSerializedObject(obj);
+                this.initFromSerialized(obj);
+            });
     }
 
     protected makeGraph() {
