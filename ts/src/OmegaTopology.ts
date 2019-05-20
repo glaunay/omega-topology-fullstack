@@ -6,7 +6,7 @@ import PartnersMap from './PartnersMap';
 import { setUnion } from './helpers';
 import zip from 'python-zip';
 import md5 from 'md5';
-import LocalMitab, { MitabTopology } from "./MitabTopology";
+import { MitabTopology } from "./MitabTopology";
 import PSICQuic from "./PSICQuic";
 
 interface NodeGraphComponent {
@@ -213,7 +213,12 @@ export default class OmegaTopology {
     }
 
     protected initFromSerialized(obj: SerializedOmegaTopology) {
-        this.ajdTree = MDTree.from(obj.tree) as MDTree<HoParameterSet>;
+        this.ajdTree = MDTree.from(obj.tree, (_, value) => {
+            if ("lowQueryParam" in value && "highQueryParam" in value) {
+                return HoParameterSet.from(value);
+            }
+            return value;
+        }) as MDTree<HoParameterSet>;
         this.G = GraphJSON.read(obj.graph);
 
         if (obj.homolog) {

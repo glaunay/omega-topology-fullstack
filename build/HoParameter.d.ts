@@ -11,6 +11,17 @@ export declare class HoParameterSet {
     readonly templates: string[][];
     add(x: HVector, y: HVector): void;
     trim(simPct?: number, idPct?: number, cvPct?: number, eValue?: number, definitive?: boolean): void;
+    static from(obj: {
+        lowQueryParam: {
+            data: string[];
+            valid: boolean;
+        }[];
+        highQueryParam: {
+            data: string[];
+            valid: boolean;
+        }[];
+        visible: boolean;
+    }): HoParameterSet;
     [Symbol.iterator](): IterableIterator<[HoParameter, HoParameter]>;
 }
 export declare class HoParameter {

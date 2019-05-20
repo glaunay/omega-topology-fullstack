@@ -29,7 +29,7 @@ export declare class MDTree<T> {
     protected testRef(x: string, y: string): boolean;
     [Symbol.iterator](): IterableIterator<[string, string, T]>;
     serialize(): string;
-    static from(serialized: string): MDTree<any>;
+    static from(serialized: string, reviver?: (this: any, key: string, value: any) => any): MDTree<any>;
 }
 export declare class DNTree<T> extends MDTree<T> {
     weights: {

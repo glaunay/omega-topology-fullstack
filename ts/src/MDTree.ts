@@ -173,8 +173,8 @@ export class MDTree<T> {
         return JSON.stringify({ data: this.data, append: true, version: 1 });
     }
 
-    static from(serialized: string) : MDTree<any> {
-        const tree = JSON.parse(serialized);
+    static from(serialized: string, reviver?: (this: any, key: string, value: any) => any) : MDTree<any> {
+        const tree = JSON.parse(serialized, reviver);
 
         const supported = [1];
 

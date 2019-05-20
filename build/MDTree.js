@@ -132,8 +132,8 @@ class MDTree {
     serialize() {
         return JSON.stringify({ data: this.data, append: true, version: 1 });
     }
-    static from(serialized) {
-        const tree = JSON.parse(serialized);
+    static from(serialized, reviver) {
+        const tree = JSON.parse(serialized, reviver);
         const supported = [1];
         if (!supported.includes(tree.version)) {
             throw new Error("Unsupported MDTree version: " + tree.version);

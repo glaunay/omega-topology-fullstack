@@ -66,6 +66,25 @@ export class HoParameterSet {
         }
     }
 
+    static from(obj: { lowQueryParam: {data: string[], valid: boolean}[], highQueryParam: {data: string[], valid: boolean}[], visible: boolean }) {
+        const param = new HoParameterSet;
+
+        param.lowQueryParam = obj.lowQueryParam.map(l => {
+            const low = new HoParameter(l.data);
+            low.valid = l.valid;
+            return low;
+        });
+        param.highQueryParam = obj.highQueryParam.map(l => {
+            const low = new HoParameter(l.data);
+            low.valid = l.valid;
+            return low;
+        });
+
+        param.visible = obj.visible;
+
+        return param;
+    }
+
     *[Symbol.iterator]() : IterableIterator<[HoParameter, HoParameter]> {
         for (const values of zip(this.lowQueryParam, this.highQueryParam)) {
             yield values as [HoParameter, HoParameter];

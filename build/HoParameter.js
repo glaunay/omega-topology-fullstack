@@ -59,6 +59,21 @@ class HoParameterSet {
             this.highQueryParam = this.highQueryParam.filter((_, index) => !to_remove.includes(index));
         }
     }
+    static from(obj) {
+        const param = new HoParameterSet;
+        param.lowQueryParam = obj.lowQueryParam.map(l => {
+            const low = new HoParameter(l.data);
+            low.valid = l.valid;
+            return low;
+        });
+        param.highQueryParam = obj.highQueryParam.map(l => {
+            const low = new HoParameter(l.data);
+            low.valid = l.valid;
+            return low;
+        });
+        param.visible = obj.visible;
+        return param;
+    }
     *[Symbol.iterator]() {
         for (const values of python_zip_1.default(this.lowQueryParam, this.highQueryParam)) {
             yield values;

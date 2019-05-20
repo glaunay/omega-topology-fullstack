@@ -155,7 +155,12 @@ class OmegaTopology {
         return JSON.stringify(obj);
     }
     initFromSerialized(obj) {
-        this.ajdTree = MDTree_1.MDTree.from(obj.tree);
+        this.ajdTree = MDTree_1.MDTree.from(obj.tree, (_, value) => {
+            if ("lowQueryParam" in value && "highQueryParam" in value) {
+                return HoParameter_1.HoParameterSet.from(value);
+            }
+            return value;
+        });
         this.G = graphlib_1.json.read(obj.graph);
         if (obj.homolog) {
             this.hData = HomologyTree_1.default.from(obj.homolog);
