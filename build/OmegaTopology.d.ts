@@ -12,7 +12,7 @@ interface SerializedOmegaTopology {
 export default class OmegaTopology {
     protected hData: HomologTree;
     protected ajdTree: MDTree<HoParameterSet>;
-    protected baseTopology?: MitabTopology;
+    protected baseTopology: MitabTopology;
     protected init_promise: Promise<void>;
     /**
      * GRAPH

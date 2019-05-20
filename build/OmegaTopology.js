@@ -11,12 +11,14 @@ const PartnersMap_1 = __importDefault(require("./PartnersMap"));
 const helpers_1 = require("./helpers");
 const python_zip_1 = __importDefault(require("python-zip"));
 const md5_1 = __importDefault(require("md5"));
+const MitabTopology_1 = require("./MitabTopology");
+const PSICQuic_1 = __importDefault(require("./PSICQuic"));
 class OmegaTopology {
     constructor(homologyTree, mitabObj) {
         this.ajdTree = new MDTree_1.MDTree(false);
         this.init_promise = Promise.resolve();
         this.hData = homologyTree;
-        this.baseTopology = mitabObj;
+        this.baseTopology = mitabObj ? mitabObj : new MitabTopology_1.MitabTopology(new PSICQuic_1.default);
         this.G = new graphlib_1.Graph({ directed: false });
     }
     init() {

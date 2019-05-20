@@ -6,7 +6,8 @@ import PartnersMap from './PartnersMap';
 import { setUnion } from './helpers';
 import zip from 'python-zip';
 import md5 from 'md5';
-import { MitabTopology } from "./MitabTopology";
+import LocalMitab, { MitabTopology } from "./MitabTopology";
+import PSICQuic from "./PSICQuic";
 
 interface NodeGraphComponent {
     group: number;
@@ -23,7 +24,7 @@ interface SerializedOmegaTopology {
 export default class OmegaTopology {
     protected hData: HomologTree;
     protected ajdTree: MDTree<HoParameterSet> = new MDTree(false);
-    protected baseTopology?: MitabTopology; 
+    protected baseTopology: MitabTopology; 
     protected init_promise = Promise.resolve();
     
     /**
@@ -37,7 +38,7 @@ export default class OmegaTopology {
 
     constructor(homologyTree?: HomologTree, mitabObj?: MitabTopology) {
         this.hData = homologyTree;
-        this.baseTopology = mitabObj;
+        this.baseTopology = mitabObj ? mitabObj : new MitabTopology(new PSICQuic);
         this.G = new Graph({directed: false});
     }
 
