@@ -6,7 +6,6 @@ import PartnersMap from './PartnersMap';
 import { setUnion } from './helpers';
 import zip from 'python-zip';
 import md5 from 'md5';
-import { MitabTopology } from "./MitabTopology";
 import PSICQuic from "./PSICQuic";
 
 interface NodeGraphComponent {
@@ -22,9 +21,18 @@ interface SerializedOmegaTopology {
 }
 
 export default class OmegaTopology {
+    /**
+     * Represents all the blast hits of current used organism.
+     */
     protected hData: HomologTree;
+    /**
+     * Represents all the edges / nodes held by OmegaTopology.
+     */
     protected ajdTree: MDTree<HoParameterSet> = new MDTree(false);
-    protected baseTopology: MitabTopology; 
+    /**
+     * Represents Mitab data held by current object.
+     */
+    protected baseTopology: PSICQuic; 
     protected init_promise = Promise.resolve();
     
     /**
@@ -35,25 +43,40 @@ export default class OmegaTopology {
      */
     protected G: Graph;
 
-
-    constructor(homologyTree?: HomologTree, mitabObj?: MitabTopology) {
+    /**
+     * Creates an instance of OmegaTopology.
+     * 
+     * @param {HomologTree} [homologyTree] If you want to use a tree, specify it here. Required to build edges.
+     * @param {MitabTopology} [mitabObj] If you want to have a custom Mitab object, specify it here. Otherwise, create a new object with a empty PSICQuic obj.
+     */
+    constructor(homologyTree?: HomologTree, mitabObj?: PSICQuic) {
         this.hData = homologyTree;
-        this.baseTopology = mitabObj ? mitabObj : new MitabTopology(new PSICQuic);
+        this.baseTopology = mitabObj ? mitabObj : new PSICQuic;
         this.G = new Graph({directed: false});
     }
 
+    /**
+     * Resolve when OmegaTopology is ready.
+     *
+     * @returns {Promise<void>}
+     */
     init() {
         return this.init_promise;
     }
 
-    prune(renew = true, max_distance: number = 5, ...seeds: string[]) : Graph {
+    /**
+     * Prune and renew the graph.
+     * 
+     * @param {number} [max_distance=5] If you want all the connex composants, use -1
+     * @param {...string[]} seeds All the seeds you want to search
+     * @returns {Graph}
+     */
+    prune(max_distance: number = 5, ...seeds: string[]) : Graph {
         console.log(seeds);
 
         // Set all nodes visible
-        if (renew) {
-            for (const [, , datum] of this) {
-                datum.visible = true;
-            }
+        for (const [, , datum] of this) {
+            datum.visible = true;
         }
 
         this.G = this.makeGraph();
@@ -87,8 +110,6 @@ export default class OmegaTopology {
         else {
             // Gettings neighboors for a specific distance
             const getAvailableNeighboors = (initial: string, distance: number) => {
-                distance = distance > 0 ? distance : 1;
-                console.log("Distance", distance);
                 const node = this.G.node(initial);
                 if (!node) {
                     return new Set;
@@ -97,7 +118,7 @@ export default class OmegaTopology {
                 let to_visit = new Set(this.G.neighbors(initial) as string[]);
                 let visited = new Set([initial]);
 
-                while (distance > 0) {
+                while (distance !== 0 && to_visit.size) {
                     let tampon = new Set;
                     // Ajout de chaque voisin des voisins
                     for (const visitor of to_visit) {
@@ -155,10 +176,21 @@ export default class OmegaTopology {
         return this.G;
     }
 
+    /**
+     * Yield all the edges of internal tree (even not visible)
+     * First and second string mean the edge label, HoParameterSet is the value.
+     *
+     * @yields {[string, string, HoParameterSet]}
+     */
     *[Symbol.iterator]() : IterableIterator<[string, string, HoParameterSet]> {
         yield* this.ajdTree;
     }
 
+    /**
+     * Yields all the edges that are visible. See [[Iterator]].
+     * 
+     * @yields {[string, string, HoParameterSet]}
+     */
     *iterVisible() : IterableIterator<[string, string, HoParameterSet]> {
         for (const [k1, k2, datum] of this) {
             if (!datum.isEmpty && datum.visible) {
@@ -167,19 +199,82 @@ export default class OmegaTopology {
         }
     }
 
+    /**
+     * Yields all the "template pairs": Couple of HoParameter.
+     * If you want unique pairs of ID composed by the templates (pairs could be duplicated because of a non-filtered load),
+     * Use the "uniqueTemplatePairs" function.
+     *
+     * @yields {[HoParameter, HoParameter]}
+     */
     *templatePairs() : IterableIterator<[HoParameter, HoParameter]> {
         for (const [, , set] of this) {
             yield* zip(set.lowQueryParam, set.highQueryParam) as IterableIterator<[HoParameter, HoParameter]>;
         }
     }
 
-    dump() {
-        const nodes: any[] = []; /// TODO obtenir les noeuds
-        const links = [...this.iterVisible()].map(([source, target, data]) => { return { source, target, data }; });
+    /**
+     * Get all the unique pairs in template pairs. 
+     * Pairs are 100% unique and reversible, it mean you **can't** have [id1, id2] then [id2, id1].
+     *
+     * @returns {[string, string][]}
+     */
+    uniqueTemplatePairs(fromVisible = false) : [string, string][] {
+        const templateColl = new MDTree<boolean>(false);
+        const gen = fromVisible ? this.iterVisible() : this[Symbol.iterator]();
 
-        return { nodes, links };
+        for (const [, , e] of gen) {
+            const templates = e.templates;
+
+            for (const [t1, t2] of zip(...templates)) {
+                templateColl.getOrSet(t1, t2, true);
+            }
+        }
+
+        const unique_pairs: [string, string][] = [];
+
+        for (const id in templateColl.full_tree) {
+            unique_pairs.push(...Object.keys(templateColl.full_tree[id]).map(k => [id, k]) as [string, string][]);
+        }
+
+        return unique_pairs;
     }
 
+    /**
+     * @deprecated
+     */
+    olduniqueTemplatePairs() : [string, string][] {
+        const set_pairs: {[id: string]: Set<string>} = {};
+        
+        for (const [pair1, pair2] of this.templatePairs()) {
+            const [p1, p2] = [pair1.data[0], pair2.data[0]];
+
+            const master_id = p1 > p2 ? p1 : p2;
+            const lower_id = p1 > p2 ? p2 : p1;
+
+            if (master_id in set_pairs) {
+                set_pairs[master_id].add(lower_id);
+            }
+            else {
+                set_pairs[master_id] = new Set([lower_id]);
+            }
+        }
+
+        // Unification
+        const unique_pairs: [string, string][] = [];
+
+        for (const id in set_pairs) {
+            unique_pairs.push(...Array.from(set_pairs[id]).map(e => [id, e]) as [string, string][]);
+        }
+
+        return unique_pairs;
+    }
+
+    /**
+     * Dump the current generated graph to string.
+     *
+     * @param {boolean} [trim_invalid=true]
+     * @returns {string}
+     */
     dumpGraph(trim_invalid = true) {
         const graph: any = GraphJSON.write(this.G);
 
@@ -198,6 +293,14 @@ export default class OmegaTopology {
         return JSON.stringify(graph);
     }
 
+    /**
+     * Serialize the OmegaTopology object. 
+     * To reduce the size of the save, you can omit the homology tree. 
+     * (Not required for usage when all the edges are built.)
+     *
+     * @param {boolean} [with_homology_tree=true]
+     * @returns {string}
+     */
     serialize(with_homology_tree = true) : string {
         const obj: SerializedOmegaTopology = {
             graph: GraphJSON.write(this.G),
@@ -212,6 +315,12 @@ export default class OmegaTopology {
         return JSON.stringify(obj);
     }
 
+    /**
+     * Init this object with a serialized representation of OmegaTopology.
+     *
+     * @param {SerializedOmegaTopology} obj JSON.parsed serialized string
+     * @returns {this}
+     */
     protected initFromSerialized(obj: SerializedOmegaTopology) {
         this.ajdTree = MDTree.from(obj.tree, (_, value) => {
             if (typeof value === "object" && "lowQueryParam" in value && "highQueryParam" in value) {
@@ -228,16 +337,31 @@ export default class OmegaTopology {
         return this;
     }
 
-    static from(serialized: string) : OmegaTopology {
+    /**
+     * Create a new OmegaTopology object from a serialized string.
+     * You can specify a Mitab object to attach to.
+     *
+     * @static
+     * @param {string} serialized
+     * @param {MitabTopology} [customMitab] Optional.
+     * @returns {OmegaTopology}
+     */
+    static from(serialized: string, customMitab?: PSICQuic) : OmegaTopology {
         const obj: SerializedOmegaTopology = JSON.parse(serialized);
 
         OmegaTopology.checkSerializedObject(obj);
 
-        const newobj = new OmegaTopology;
+        const newobj = new OmegaTopology(undefined, customMitab);
         
         return newobj.initFromSerialized(obj);
     }
 
+    /**
+     * Check if the given object is a valid OmegaTopology serialized.
+     *
+     * @static
+     * @param {*} obj
+     */
     protected static checkSerializedObject(obj: any) {
         if (!OmegaTopology.isASerializedOmegaTopology(obj)) {
             throw new Error("Object is not omegatopology serialization");
@@ -249,10 +373,23 @@ export default class OmegaTopology {
         }
     }
 
+    /**
+     * Return true if obj meets all required keys in a serialized OmegaTopology obj.
+     * @static
+     * @param {*} obj
+     * @returns {boolean}
+     */
     protected static isASerializedOmegaTopology(obj: any): boolean {
         return "version" in obj && "tree" in obj && "graph" in obj;
     }
 
+    /**
+     * Download a serialized OmegaTopology from an URL, then
+     * load the data in the current object.
+     *
+     * @param {string} url
+     * @returns {Promise<void>}
+     */
     fromDownload(url: string) {
         return this.init_promise = fetch(url)
             .then(r => r.json())
@@ -262,6 +399,11 @@ export default class OmegaTopology {
             });
     }
 
+    /**
+     * Make a new graph using currently visible nodes/edges.
+     * 
+     * @returns {Graph}
+     */
     protected makeGraph() {
         const g = new Graph({ directed: false });
 
@@ -272,14 +414,23 @@ export default class OmegaTopology {
         return g;
     }
 
+    /**
+     * Number of visible edges.
+     */
     get edgeNumber() : number {
         return [...this.iterVisible()].length;
     }
 
+    /**
+     * Number of visible nodes.
+     */
     get nodeNumber() : number {
         return Object.keys(this.nodes).length;
     }
 
+    /**
+     * Get all the visible nodes in OmegaTopology object.
+     */
     get nodes() {
         const nodes: { [id: string]: Set<any> } = {};
 
@@ -300,10 +451,19 @@ export default class OmegaTopology {
         return nodes;
     }
 
+    /**
+     * Reference to the PSICQuic object used to add/delete Mitab lines.
+     */
     get psi() {
-        return this.baseTopology.psi;
+        return this.baseTopology;
     }
 
+    /**
+     * Make a node visible.
+     * Warning: This function is NOT at constant complexity.
+     *
+     * @param {string} node
+     */
     protected showNode(node: string) {
         const node_value = Object.entries(this.ajdTree.getNode(node));
 
@@ -312,6 +472,12 @@ export default class OmegaTopology {
         }
     }
 
+    /**
+     * Make a node hidden.
+     * Warning: This function is NOT at constant complexity.
+     *
+     * @param {string} node
+     */
     protected hideNode(node: string) {
         const node_value = Object.entries(this.ajdTree.getNode(node));
 
@@ -320,17 +486,35 @@ export default class OmegaTopology {
         }
     }
 
+    /**
+     * Length of the internal tree.
+     */
     get length() {
         return this.ajdTree.length;
     }
 
+    /**
+     * Length of the homology tree.
+     */
     get hDataLength() {
         return this.hData ? this.hData.length : 0;
     }
 
-    async buildEdgesReverse(bar: any /** Progress bar (any for not importing Progress in clients) */) {
+    /**
+     * Build the edges using the "reverse" method: 
+     * Ask the CouchDB what is the partners of all the keys of homology tree.
+     * Then, get the data from all the partners from tree,
+     * then construct the internal tree using addEdgeSet.
+     * 
+     * If you have imported a serialized string to create the OmegaTopology object,
+     * you DON'T have to do this again !
+     *
+     * @param {string} url URL to the omegalomodb service (with endpoint).
+     * @param {*} bar
+     */
+    async buildEdgesReverse(url = "http://localhost:3280/bulk", bar?: any /** Progress bar (any for not importing Progress in clients) */) {
         const inters = new PartnersMap({ // TODO TOCHANGE
-            database_url: "http://localhost:3280/bulk",
+            database_url: url,
             /** filename: "/Users/lberanger/dataOmega/interactors.json" */
         });
 
@@ -355,21 +539,23 @@ export default class OmegaTopology {
                     const dataNewB = this.hData.getChildrenData(baseIdB);
                     this.addEdgeSet(dataNewA, dataNewB);
                 }
-
-                // FACULTATIF POUR LE MOMENT
-                // Pour chaque couple children_id | interactant, obtenir les données mitab
-                // for (const int of [children_id, ...tuple_interactors]) {
-                //     interactors_to_get++;
-                //     set.add(int);
-                // }
             }
         }
         atime += (Date.now() - timer);
-                
-        // console.log("Sync method = ", time / 1000, "seconds");
-        // console.log("Async method = ", atime / 1000, "seconds, edges has been constructed");
+        return atime;
     } 
 
+    /**
+     * Build the edges using the full-stuffed Mitab Topology object.
+     * You NEED to have a homology tree set, and a PSICQuic object with all the Mitab data.
+     * 
+     * Classic processus is: 
+     * `const p = new PSICQuic` then
+     * `await p.read(mitab_filename)` then
+     * `const t = new OmegaTopology(hTree, p)` then
+     * `t.buildEdges()`
+     *
+     */
     buildEdges() : void {
         if (!this.baseTopology) {
             throw new Error('OmegaTopology has not been initialized with base topo');
@@ -377,7 +563,7 @@ export default class OmegaTopology {
     
         let nbBase = 0;
 
-        for (const [baseIdA, baseIdB, ] of this.baseTopology) {
+        for (const [baseIdA, baseIdB, ] of this.baseTopology.couples()) {
             const dataNewA = this.hData.getChildrenData(baseIdA);
             const dataNewB = this.hData.getChildrenData(baseIdB);
             this.addEdgeSet(dataNewA, dataNewB);
@@ -387,6 +573,15 @@ export default class OmegaTopology {
         console.log(this.edgeNumber, "interactions unpacked from", nbBase);
     }
 
+    /**
+     * Like trimEdges(), but remove the nodes definitively from internal tree. 
+     * (Useful for free RAM and speed up the prune process)
+     *
+     * @param {number} [simPic=0]
+     * @param {number} [idPct=0]
+     * @param {number} [cvPct=0]
+     * @returns {[number, number]} [number of deleted edges, total edges count]
+     */
     definitiveTrim(simPic = 0, idPct = 0, cvPct = 0) : [number, number] {
         let nDel = 0;
         let nTot = 0;
@@ -404,6 +599,18 @@ export default class OmegaTopology {
         return [nDel, nTot];
     }
 
+    /**
+     * Trim edges that don't meet the threshold.
+     * Trimmed edges won't be visible using iterVisible() and won't be
+     * present during the next's prune() calls.
+     * 
+     * This trim is not definitive, you can use to hide edges then make then visible again with a further call.
+     *
+     * @param {number} [simPic=0] Similarity threshold
+     * @param {number} [idPct=0] Identity threshold
+     * @param {number} [cvPct=0] Coverage threshold
+     * @returns {[number, number]} [number of deleted edges, total edges count]
+     */
     trimEdges(simPic = 0, idPct = 0, cvPct = 0) : [number, number] {
         let nDel = 0;
         let nTot = 0;
@@ -424,16 +631,12 @@ export default class OmegaTopology {
         return JSON.stringify(Array.from(this.iterVisible()));
     }
 
-    getEdgeSet(...args: any[]) : IterableIterator<[string, string, HoParameterSet]> | undefined {
-        if (args.length === 0) {
-            return this.iterVisible();
-        }
-
-        if (args.length > 2) {
-            throw new Error("Excepted 0, 1 or 2 node, got " + args.length);
-        }
-    }
-
+    /**
+     * Add a couple of HomologChildren to internal tree.
+     *
+     * @param {HomologChildren} dataNewA
+     * @param {HomologChildren} dataNewB
+     */
     addEdgeSet(dataNewA: HomologChildren, dataNewB: HomologChildren) : void {
         const newAelements = Object.keys(dataNewA).map(e => [md5(e), e, dataNewA[e]]) as [string, string, string[]][];
         const newBelements = Object.keys(dataNewB).map(e => [md5(e), e, dataNewB[e]]) as [string, string, string[]][];
@@ -454,23 +657,5 @@ export default class OmegaTopology {
                 HoParameterSetObj.add(dX, dY);
             }
         }
-    }
-
-    templateZipPair() : MDTree<boolean> {
-        const templateColl = new MDTree<boolean>(false);
-
-        for (const [, , e] of this.iterVisible()) {
-            const templates = e.templates;
-
-            for (const [t1, t2] of zip(...templates)) {
-                templateColl.getOrSet(t1, t2, true);
-            }
-        }
-
-        return templateColl;
-    }
-
-    protected weightProjector() {
-        // empty
     }
 }

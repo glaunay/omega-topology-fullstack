@@ -3,47 +3,73 @@ import PSICQuic from "./PSICQuic";
 
 ////// Cette instance est destinée à tourner chez un client. L'utilité pour le service est moindre (reconstruction).
 
-export class MitabTopology {
-    protected psiq: PSICQuic;
-
-    constructor(psqObject: PSICQuic) {
-        this.psiq = psqObject;
-    }
-
-    keys() {
-        return this.psiq.records.keys();
-    }
-
-    public *[Symbol.iterator]() {
-        yield* this.psiq.couples();
-    }
-
-    get length() {
-        return this.psiq.length;
-    }
-
-    get(k1: string) {
-        return this.psiq.get(k1);
-    }
-
-    get [Symbol.toStringTag]() {
-        return "MitabTopology";
-    }
-
-    get psi() {
-        return this.psiq;
-    }
-}
-
-export default class LocalMitab extends MitabTopology {
+/**
+ * @deprecated *USE ONLY MitabTopology*
+ *
+ * @export
+ * @class LocalMitab
+ * @extends {MitabTopology}
+ */
+export default class MitabTopology {
     protected empty_nodes = new Set;
     protected _remaining = 0;
     protected _dls = 0;
 
     protected cache = {};
 
-    constructor(protected url: string, protected couple_url: string) {
-        super(new PSICQuic);
+    constructor(protected psiq: PSICQuic, protected url: string, protected couple_url: string) { }
+
+    /**
+     * Get keys of all the records.
+     *
+     * @yields {string}
+     */
+    *keys() {
+        yield* this.psiq.records.keys();
+    }
+
+    /**
+     * Iterate through all the existing couples in the records.
+     * 
+     * @yields {[string, string, PSQData[]]}
+     */
+    public *[Symbol.iterator]() {
+        yield* this.psiq.couples();
+    }
+
+    /**
+     * Get length of the records.
+     */
+    get length() {
+        return this.psiq.length;
+    }
+
+    /**
+     * Get all the corresponding lines from an ID
+     * @param {string} k1 
+     */
+    get(k1: string) {
+        return this.psiq.get(k1);
+    }
+
+    /**
+     * Get all the corresponding lines from a couple of IDs
+     * @param {string} k1 
+     * @param {string} k2
+     */
+    couple(k1: string, k2: string) {
+        return this.psiq.getLines(k1, k2);
+    }
+
+    get [Symbol.toStringTag]() {
+        return "MitabTopology";
+    }
+
+    /**
+     * Returns the PSICQuic object held by the Mitab object
+     */
+    get psi() {
+        return this.psiq;
     }
 
     async fetch(k1: string) {

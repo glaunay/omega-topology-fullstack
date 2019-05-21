@@ -31,6 +31,10 @@ export class MDTree<T> {
         return c;
     }
 
+    get full_tree() {
+        return this.data;
+    }
+
     public keys() : Set<string> {
         const set = new Set(Object.keys(this.data));
 

@@ -36,7 +36,7 @@ export class HoParameterSet {
         return [
             this.lowQueryParam.filter(e => e.valid).map(e => e.template),
             this.highQueryParam.filter(e => e.valid).map(e => e.template)
-        ];
+        ] as [string[], string[]];
     }
 
     add(x: HVector, y: HVector) {
