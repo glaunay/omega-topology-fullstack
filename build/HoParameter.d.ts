@@ -8,7 +8,7 @@ export declare class HoParameterSet {
     readonly depth: number;
     readonly length: number;
     readonly isEmpty: boolean;
-    readonly templates: string[][];
+    readonly templates: [string[], string[]];
     add(x: HVector, y: HVector): void;
     trim(simPct?: number, idPct?: number, cvPct?: number, eValue?: number, definitive?: boolean): void;
     static from(obj: {

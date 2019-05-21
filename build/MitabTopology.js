@@ -1,43 +1,68 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const PSICQuic_1 = __importDefault(require("./PSICQuic"));
 ////// Cette instance est destinée à tourner chez un client. L'utilité pour le service est moindre (reconstruction).
+/**
+ * @deprecated *USE ONLY MitabTopology*
+ *
+ * @export
+ * @class LocalMitab
+ * @extends {MitabTopology}
+ */
 class MitabTopology {
-    constructor(psqObject) {
-        this.psiq = psqObject;
-    }
-    keys() {
-        return this.psiq.records.keys();
-    }
-    *[Symbol.iterator]() {
-        yield* this.psiq.couples();
-    }
-    get length() {
-        return this.psiq.length;
-    }
-    get(k1) {
-        return this.psiq.get(k1);
-    }
-    get [Symbol.toStringTag]() {
-        return "MitabTopology";
-    }
-    get psi() {
-        return this.psiq;
-    }
-}
-exports.MitabTopology = MitabTopology;
-class LocalMitab extends MitabTopology {
-    constructor(url, couple_url) {
-        super(new PSICQuic_1.default);
+    constructor(psiq, url, couple_url) {
+        this.psiq = psiq;
         this.url = url;
         this.couple_url = couple_url;
         this.empty_nodes = new Set;
         this._remaining = 0;
         this._dls = 0;
         this.cache = {};
+    }
+    /**
+     * Get keys of all the records.
+     *
+     * @yields {string}
+     */
+    *keys() {
+        yield* this.psiq.records.keys();
+    }
+    /**
+     * Iterate through all the existing couples in the records.
+     *
+     * @yields {[string, string, PSQData[]]}
+     */
+    *[Symbol.iterator]() {
+        yield* this.psiq.couples();
+    }
+    /**
+     * Get length of the records.
+     */
+    get length() {
+        return this.psiq.length;
+    }
+    /**
+     * Get all the corresponding lines from an ID
+     * @param {string} k1
+     */
+    get(k1) {
+        return this.psiq.get(k1);
+    }
+    /**
+     * Get all the corresponding lines from a couple of IDs
+     * @param {string} k1
+     * @param {string} k2
+     */
+    couple(k1, k2) {
+        return this.psiq.getLines(k1, k2);
+    }
+    get [Symbol.toStringTag]() {
+        return "MitabTopology";
+    }
+    /**
+     * Returns the PSICQuic object held by the Mitab object
+     */
+    get psi() {
+        return this.psiq;
     }
     async fetch(k1) {
         if (this.empty_nodes.has(k1)) {
@@ -163,4 +188,4 @@ class LocalMitab extends MitabTopology {
         return promises;
     }
 }
-exports.default = LocalMitab;
+exports.default = MitabTopology;

@@ -24,6 +24,9 @@ class MDTree {
             c += Object.keys(this.data[k1]).length;
         return c;
     }
+    get full_tree() {
+        return this.data;
+    }
     keys() {
         const set = new Set(Object.keys(this.data));
         for (const k in this.data) {

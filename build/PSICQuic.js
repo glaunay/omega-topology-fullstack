@@ -7,13 +7,26 @@ const reversible_key_map_1 = __importDefault(require("reversible-key-map"));
 const PSICQuicData_1 = require("./PSICQuicData");
 const helpers_1 = require("./helpers");
 class PSICQuic {
+    /**
+     * Creates an instance of PSICQuic.
+     * @param {string} [mode="LOOSE"] >deprecated Unused.
+     * @param {boolean} [keep_raw=false] Keep the raw line when creating PSQData children.
+     * @param {boolean} [offline=true] >deprecated Always be true. Unused
+     */
     constructor(mode = "LOOSE", keep_raw = false, offline = true) {
         this.mode = mode;
         this.keep_raw = keep_raw;
+        // public static mitabLvls = ["25", "27"];
         // public static web = new OLS;
-        this.records = new reversible_key_map_1.default();
-        this.registredPublications = {};
         // public registry = new Registry;
+        /**
+         * Records of Mitab currently loaded.
+         */
+        this.records = new reversible_key_map_1.default;
+        /**
+         * Registered publications.
+         */
+        this.registredPublications = {};
         this.init_promise = Promise.resolve();
         /* if (!offline) { registryUrl = "http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry?action=STATUS&format=xml"
             this.init_promise = this.getRegistry(registryUrl)
@@ -29,9 +42,17 @@ class PSICQuic {
                 });
         } */
     }
+    /**
+     * Promise symbolizing the instance state. Resolved when ready.
+     */
     init() {
         return this.init_promise;
     }
+    /**
+     * Read one or multiple Mitab lines and register then in records.
+     *
+     * @param {(string | string[])} str
+     */
     readLines(str) {
         if (typeof str === 'string') {
             str = str.split('\n');
@@ -42,6 +63,12 @@ class PSICQuic {
         }
         return added_psq;
     }
+    /**
+     * Asynchronously read a Mitabfile. (use streams !)
+     *
+     * @param {string} file Filename
+     * @param {boolean} [with_progress=true] Create a progress bar of current read state.
+     */
     async read(file, with_progress = true) {
         const fs = require("fs");
         const readline = require("readline");
@@ -72,13 +99,26 @@ class PSICQuic {
             });
         });
     }
+    /**
+     * @deprecated SHOULD MOVE IT
+     *
+     * @param {string[]} ids
+     */
     static bulkGetWrap(ids) {
         return { docs: ids.map(id => { id; }) };
     }
+    /**
+     * Clone current object. Warning, does NOT clone the records map, they will be shared.
+     */
     clone() {
         const newclone = new PSICQuic;
         newclone.records = this.records;
     }
+    /**
+     * Add all the records of other to actual instance.
+     *
+     * @param {PSICQuic} other
+     */
     plus(other) {
         for (const [, value] of other.records) {
             for (const line of value) {
@@ -87,8 +127,13 @@ class PSICQuic {
                 }
             }
         }
-        return [].concat(...this.records.values());
     }
+    /**
+     * Check if PSQData is valid.
+     *
+     * @protected
+     * @param {PSQData} psqDataObj
+     */
     checkPsqData(psqDataObj) {
         const pmid = psqDataObj.pmid;
         const source = psqDataObj.source.toLowerCase();
@@ -107,6 +152,9 @@ class PSICQuic {
             return false;
         }
     }
+    /**
+     * Get the size of the records map.
+     */
     get length() {
         return this.records.size;
     }
@@ -116,27 +164,60 @@ class PSICQuic {
     get [Symbol.toStringTag]() {
         return "PSICQuic";
     }
+    /**
+     * Get a PSQData by index.
+     * This is REALLY not recommanded, get using id instead !
+     *
+     * @param {number} i Index
+     */
     getByIndex(i) {
         return [].concat(...this.records.values())[i];
     }
+    /**
+     * Returns true of id exists in records.
+     *
+     * @param {string} id
+     */
     has(id) {
         return this.records.has(id);
     }
+    /**
+     * Returns true if couple [id1, id2] exists in records.
+     *
+     * @param {string} id1
+     * @param {string} id2
+     */
     hasCouple(id1, id2) {
         return this.records.hasCouple(id1, id2);
     }
+    /**
+     * Get all the lines associated to id.
+     *
+     * @param {string} id
+     */
     get(id) {
         if (this.has(id)) {
             return [].concat(...this.records.getAllFrom(id).values());
         }
         return [];
     }
+    /**
+     * Get all the lines associated to couple [id1, id2].
+     *
+     * @param {string} id1
+     * @param {string} id2
+     */
     getLines(id1, id2) {
         if (this.hasCouple(id1, id2)) {
             return this.records.get(id1, id2);
         }
         return [];
     }
+    /**
+     * Register a PSQData in records.
+     *
+     * @param {PSQData} psq
+     */
     update(psq) {
         const [id1, id2] = psq.ids;
         const actual_array = this.getLines(id1, id2);
@@ -146,16 +227,30 @@ class PSICQuic {
             this.records.set(id1, id2, actual_array);
         }
     }
+    /**
+     * Yields through the recorded PSQData.
+     *
+     * @yields {PSQData}
+     */
     *[Symbol.iterator]() {
         for (const lines of this.records.values()) {
             yield* lines;
         }
     }
+    /**
+     * Yields though the couples in records, with the form [id1, id2, lines_from_couple].
+     *
+     * @yields {[string, string, PSQData[]]}
+     */
     *couples() {
         for (const [keys, lines] of this.records) {
             yield [keys[0], keys[1], lines];
         }
     }
+    /**
+     * Get all the existing pairs with the form id => partners[].
+     * Pairs will exists in both forms : id1 => [id2, id3] and id2 => [id1] and id3 => [id1]
+     */
     getAllPartnersPairs() {
         const couples = {};
         for (const [keys,] of this.records) {
@@ -175,6 +270,9 @@ class PSICQuic {
         }
         return couples;
     }
+    /**
+     * Get all the lines represented with the couple {id1 => id2 => string[], ...}
+     */
     getAllLinesPaired() {
         const couples = {};
         for (const [keys, values] of this.records) {
@@ -189,12 +287,18 @@ class PSICQuic {
         }
         return couples;
     }
+    /**
+     * Delete every raw line contained in this instance, then disable keep_raw.
+     */
     flushRaw() {
         this.keep_raw = false;
         for (const psqData of this) {
             psqData.raw = undefined;
         }
     }
+    /**
+     * Clear every Mitab records and publications saved.
+     */
     clear() {
         this.records.clear();
         this.registredPublications = {};
@@ -205,7 +309,12 @@ class PSICQuic {
     dump() {
         return this.toString();
     }
-    parse(buffer, encoder) {
+    /**
+     * Parse multiple lines then add then into the instance.
+     *
+     * @param {string[]} buffer Lines into a string[] object.
+     */
+    parse(buffer) {
         for (const line of buffer) {
             if (line.length === 0 || line.startsWith('#')) {
                 continue;
@@ -214,6 +323,12 @@ class PSICQuic {
             this.update(new PSICQuicData_1.PSQData(line, this.keep_raw));
         }
     }
+    /**
+     * Parse one line.
+     *
+     * @param {string} line
+     * @param {PSQData[]} [added] Optional. Used to monitor which line is added.
+     */
     parseLine(line, added) {
         if (line.length === 0 || line.startsWith('#')) {
             return;
@@ -283,5 +398,4 @@ class PSICQuic {
         return target;
     }
 }
-PSICQuic.mitabLvls = ["25", "27"];
 exports.default = PSICQuic;

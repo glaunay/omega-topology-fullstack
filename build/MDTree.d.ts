@@ -15,6 +15,11 @@ export declare class MDTree<T> {
     constructor(append?: boolean);
     static md5(str: string): string;
     readonly length: number;
+    readonly full_tree: {
+        [id: string]: {
+            [secondId: string]: T;
+        };
+    };
     keys(): Set<string>;
     protected digest(k1: string, k2: string): [string, string];
     append(k1: string, k2: string, datum: T): void;
