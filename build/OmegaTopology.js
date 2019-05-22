@@ -97,7 +97,7 @@ class OmegaTopology {
                     to_visit = tampon;
                     distance--;
                 }
-                console.log(visited);
+                console.log("Visited nodes: ", visited);
                 return visited;
             };
             // console.log(this.G);
