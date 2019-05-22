@@ -139,7 +139,7 @@ export default class OmegaTopology {
                     distance--;
                 }
 
-                console.log(visited);
+                console.log("Visited nodes: ", visited);
 
                 return visited;
             };
