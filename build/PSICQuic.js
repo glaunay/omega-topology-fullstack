@@ -375,7 +375,7 @@ class PSICQuic {
         }
     }
     filter(uniprot = [], predicate) {
-        const target = new PSICQuic(undefined, undefined, true);
+        const target = new PSICQuic;
         if (uniprot.length) {
             const buffer = new Set(uniprot);
             for (const data of this) {
@@ -385,14 +385,14 @@ class PSICQuic {
                 }
                 up = new Set(up);
                 if (helpers_1.setIntersection(up, buffer).size) {
-                    target.records[data.hash] = data;
+                    target.update(data);
                 }
             }
         }
         if (predicate) {
             for (const data of this) {
                 if (predicate(data))
-                    target.records[data.hash] = data;
+                    target.update(data);
             }
         }
         return target;

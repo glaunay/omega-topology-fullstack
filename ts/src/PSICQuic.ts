@@ -437,8 +437,8 @@ export default class PSICQuic {
         }
     }
 
-    filter(uniprot = [], predicate?: Function) {
-        const target = new PSICQuic(undefined, undefined, true);
+    filter(uniprot: string[] = [], predicate?: Function) {
+        const target = new PSICQuic;
 
         if (uniprot.length) {
             const buffer = new Set(uniprot);
@@ -451,14 +451,14 @@ export default class PSICQuic {
 
                 up = new Set(up);
                 if (setIntersection(up, buffer).size) {
-                    target.records[data.hash] = data;
+                    target.update(data);
                 }
             }
         }
         
         if (predicate) {
             for (const data of this) {
-                if (predicate(data)) target.records[data.hash] = data;
+                if (predicate(data)) target.update(data);
             }
         }
 

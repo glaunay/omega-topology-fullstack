@@ -196,7 +196,7 @@ export default class OmegaTopology {
      * @param {string} url URL to the omegalomodb service (with endpoint).
      * @param {*} bar
      */
-    buildEdgesReverse(url?: string, bar?: any /** Progress bar (any for not importing Progress in clients) */): Promise<number>;
+    buildEdgesReverse(url: string, bar?: any /** Progress bar (any for not importing Progress in clients) */): Promise<number>;
     /**
      * Build the edges using the full-stuffed Mitab Topology object.
      * You NEED to have a homology tree set, and a PSICQuic object with all the Mitab data.

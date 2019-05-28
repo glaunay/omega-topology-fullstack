@@ -160,5 +160,5 @@ export default class PSICQuic {
     protected countPmid(): Set<string>;
     topology(type?: string): [Set<string>, Map<[string, string], PSQData[]>];
     getBiomolecules(type?: string): string[];
-    filter(uniprot?: any[], predicate?: Function): PSICQuic;
+    filter(uniprot?: string[], predicate?: Function): PSICQuic;
 }

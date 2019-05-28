@@ -512,7 +512,7 @@ export default class OmegaTopology {
      * @param {string} url URL to the omegalomodb service (with endpoint).
      * @param {*} bar
      */
-    async buildEdgesReverse(url = "http://localhost:3280/bulk", bar?: any /** Progress bar (any for not importing Progress in clients) */) {
+    async buildEdgesReverse(url: string, bar?: any /** Progress bar (any for not importing Progress in clients) */) {
         const inters = new PartnersMap({ // TODO TOCHANGE
             database_url: url,
             /** filename: "/Users/lberanger/dataOmega/interactors.json" */

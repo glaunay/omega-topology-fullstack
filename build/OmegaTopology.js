@@ -410,7 +410,7 @@ class OmegaTopology {
      * @param {string} url URL to the omegalomodb service (with endpoint).
      * @param {*} bar
      */
-    async buildEdgesReverse(url = "http://localhost:3280/bulk", bar /** Progress bar (any for not importing Progress in clients) */) {
+    async buildEdgesReverse(url, bar /** Progress bar (any for not importing Progress in clients) */) {
         const inters = new PartnersMap_1.default({
             database_url: url,
         });
