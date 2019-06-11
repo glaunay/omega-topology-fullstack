@@ -400,6 +400,23 @@ class OmegaTopology {
         }
     }
     /**
+     * Read MI Tab lines and register then in PSICQuic object.
+     * When you have finished to read lines, call **.linkMitabLines()** !
+     *
+     * @returns Number of read couples
+     */
+    read(lines) {
+        if (lines.length > 0) {
+            if (Array.isArray(lines[0])) {
+                this.psi.readLines([].concat(...lines));
+            }
+            else {
+                this.psi.readLines(lines);
+            }
+        }
+        return lines.length;
+    }
+    /**
      * Make a node visible.
      * Warning: This function is NOT at constant complexity.
      *

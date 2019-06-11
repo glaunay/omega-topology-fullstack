@@ -189,6 +189,13 @@ export default class OmegaTopology {
      */
     linkMitabLines(): void;
     /**
+     * Read MI Tab lines and register then in PSICQuic object.
+     * When you have finished to read lines, call **.linkMitabLines()** !
+     *
+     * @returns Number of read couples
+     */
+    read(lines: string[] | string[][]): number;
+    /**
      * Make a node visible.
      * Warning: This function is NOT at constant complexity.
      *
