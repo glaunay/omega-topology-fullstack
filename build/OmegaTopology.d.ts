@@ -185,6 +185,10 @@ export default class OmegaTopology {
      */
     readonly psi: PSICQuic;
     /**
+     * Mitab lines must have been downloaded in PSICQuic object !
+     */
+    linkMitabLines(): void;
+    /**
      * Make a node visible.
      * Warning: This function is NOT at constant complexity.
      *

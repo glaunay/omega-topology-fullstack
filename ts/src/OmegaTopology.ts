@@ -7,6 +7,7 @@ import { setUnion } from './helpers';
 import zip from 'python-zip';
 import md5 from 'md5';
 import PSICQuic from "./PSICQuic";
+import { PSQData } from "./main";
 
 interface NodeGraphComponent {
     group: number;
@@ -483,6 +484,23 @@ export default class OmegaTopology {
      */
     get psi() {
         return this.baseTopology;
+    }
+
+    /**
+     * Mitab lines must have been downloaded in PSICQuic object !
+     */
+    linkMitabLines() {
+        for (const [, , ho_parameter_set] of this) {
+            const lines_for_this_parameter: PSQData[][] = [];
+
+            for (const [ho_a, ho_b] of ho_parameter_set) {
+                const [id_a, id_b] = [ho_a.template, ho_b.template];
+
+                lines_for_this_parameter.push(this.psi.getLines(id_a, id_b));
+            }
+
+            ho_parameter_set.mitabCouples = lines_for_this_parameter;
+        }
     }
 
     /**

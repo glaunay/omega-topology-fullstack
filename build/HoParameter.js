@@ -8,12 +8,20 @@ class HoParameterSet {
     constructor() {
         this.lowQueryParam = [];
         this.highQueryParam = [];
+        this.mitabCouples = [];
         this.visible = true;
     }
     toString() {
+        const mitabCouples = [];
         return JSON.stringify({
-            lowQueryParam: this.lowQueryParam.filter(e => e.valid),
-            highQueryParam: this.highQueryParam.filter(e => e.valid)
+            lowQueryParam: this.lowQueryParam.filter((e, index) => {
+                if (e.valid && String(index) in this.mitabCouples) {
+                    mitabCouples.push(this.mitabCouples[index]);
+                }
+                return e.valid;
+            }),
+            highQueryParam: this.highQueryParam.filter(e => e.valid),
+            mitabCouples
         });
     }
     remove() {

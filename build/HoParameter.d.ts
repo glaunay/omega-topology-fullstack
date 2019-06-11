@@ -1,7 +1,9 @@
+import { PSQData } from "./main";
 export declare type HVector = string[];
 export declare class HoParameterSet {
     lowQueryParam: HoParameter[];
     highQueryParam: HoParameter[];
+    mitabCouples: PSQData[][];
     visible: boolean;
     toString(): string;
     remove(): void;

@@ -387,6 +387,19 @@ class OmegaTopology {
         return this.baseTopology;
     }
     /**
+     * Mitab lines must have been downloaded in PSICQuic object !
+     */
+    linkMitabLines() {
+        for (const [, , ho_parameter_set] of this) {
+            const lines_for_this_parameter = [];
+            for (const [ho_a, ho_b] of ho_parameter_set) {
+                const [id_a, id_b] = [ho_a.template, ho_b.template];
+                lines_for_this_parameter.push(this.psi.getLines(id_a, id_b));
+            }
+            ho_parameter_set.mitabCouples = lines_for_this_parameter;
+        }
+    }
+    /**
      * Make a node visible.
      * Warning: This function is NOT at constant complexity.
      *

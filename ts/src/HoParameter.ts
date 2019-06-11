@@ -1,16 +1,27 @@
 import zip from "python-zip";
+import { PSQData } from "./main";
 
 export type HVector = string[];
 
 export class HoParameterSet {
     public lowQueryParam: HoParameter[] = [];
     public highQueryParam: HoParameter[] = [];
+    public mitabCouples: PSQData[][] = [];
     public visible = true;
 
     toString() {
+        const mitabCouples = [];
+
         return JSON.stringify({
-            lowQueryParam: this.lowQueryParam.filter(e => e.valid),
-            highQueryParam: this.highQueryParam.filter(e => e.valid)
+            lowQueryParam: this.lowQueryParam.filter((e, index) => { 
+                if (e.valid && String(index) in this.mitabCouples) {
+                    mitabCouples.push(this.mitabCouples[index]);
+                }
+                
+                return e.valid; 
+            }),
+            highQueryParam: this.highQueryParam.filter(e => e.valid),
+            mitabCouples
         });
     }
 
