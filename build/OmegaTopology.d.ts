@@ -3,6 +3,10 @@ import { Graph } from "graphlib";
 import { HoParameterSet, HoParameter } from "./HoParameter";
 import { MDTree } from './MDTree';
 import PSICQuic from "./PSICQuic";
+interface NodeGraphComponent {
+    group: number;
+    val: number;
+}
 interface SerializedOmegaTopology {
     graph: Object;
     tree: string;
@@ -44,9 +48,17 @@ export default class OmegaTopology {
      */
     init(): Promise<void>;
     /**
+     * Make all nodes "visible" (reverse a prune) then construct the graph.
+     *
+     * @param {string[]} seeds
+     * @returns {Graph}
+     * @memberof OmegaTopology
+     */
+    constructGraphFrom(seeds: string[]): Graph;
+    /**
      * Prune and renew the graph.
      *
-     * @param {number} [max_distance=5] If you want all the connex composants, use -1
+     * @param {number} [max_distance=5] If you want all the connex composants, use -1 or ±Infinity
      * @param {...string[]} seeds All the seeds you want to search
      * @returns {Graph}
      */
@@ -155,9 +167,19 @@ export default class OmegaTopology {
     /**
      * Get all the visible nodes in OmegaTopology object.
      */
-    readonly nodes: {
+    readonly legacy_nodes: {
         [id: string]: Set<any>;
     };
+    /**
+     * Get all the nodes.
+     * Graph must have been constructed with .constructGraphFrom() or .prune()
+     */
+    readonly nodes: [string, NodeGraphComponent][];
+    /**
+     * Get all the links.
+     * Graph must have been constructed with .constructGraphFrom() or .prune()
+     */
+    readonly links: [[string, string], HoParameterSet][];
     /**
      * Reference to the PSICQuic object used to add/delete Mitab lines.
      */

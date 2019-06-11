@@ -38,19 +38,29 @@ class OmegaTopology {
         return this.init_promise;
     }
     /**
-     * Prune and renew the graph.
+     * Make all nodes "visible" (reverse a prune) then construct the graph.
      *
-     * @param {number} [max_distance=5] If you want all the connex composants, use -1
-     * @param {...string[]} seeds All the seeds you want to search
+     * @param {string[]} seeds
      * @returns {Graph}
+     * @memberof OmegaTopology
      */
-    prune(max_distance = 5, ...seeds) {
+    constructGraphFrom(seeds) {
         console.log(seeds);
         // Set all nodes visible
         for (const [, , datum] of this) {
             datum.visible = true;
         }
-        this.G = this.makeGraph();
+        return this.G = this.makeGraph();
+    }
+    /**
+     * Prune and renew the graph.
+     *
+     * @param {number} [max_distance=5] If you want all the connex composants, use -1 or ±Infinity
+     * @param {...string[]} seeds All the seeds you want to search
+     * @returns {Graph}
+     */
+    prune(max_distance = 5, ...seeds) {
+        this.constructGraphFrom(seeds);
         let t = Date.now();
         console.log("Graph has", this.G.nodeCount(), "nodes and", this.G.edgeCount(), "edges");
         const _seeds = new Set(seeds);
@@ -59,7 +69,7 @@ class OmegaTopology {
         for (const n of this.G.nodes()) {
             // this.showNode(n);
             if (_seeds.has(n)) {
-                this.G.setNode(n, { group: 1 });
+                this.G.setNode(n, { group: 1, val: 0 });
                 seed_set.push(n);
             }
             else {
@@ -81,7 +91,7 @@ class OmegaTopology {
                 let to_visit = new Set(this.G.neighbors(initial));
                 let visited = new Set([initial]);
                 while (distance !== 0 && to_visit.size) {
-                    let tampon = new Set;
+                    let tampon = new Set();
                     // Ajout de chaque voisin des voisins
                     for (const visitor of to_visit) {
                         if (!visited.has(visitor)) {
@@ -341,7 +351,7 @@ class OmegaTopology {
     /**
      * Get all the visible nodes in OmegaTopology object.
      */
-    get nodes() {
+    get legacy_nodes() {
         const nodes = {};
         for (const [n1, n2, e] of this.iterVisible()) {
             const templates = e.templates;
@@ -355,6 +365,20 @@ class OmegaTopology {
             }
         }
         return nodes;
+    }
+    /**
+     * Get all the nodes.
+     * Graph must have been constructed with .constructGraphFrom() or .prune()
+     */
+    get nodes() {
+        return this.G.nodes().map(n => [n, this.G.node(n)]);
+    }
+    /**
+     * Get all the links.
+     * Graph must have been constructed with .constructGraphFrom() or .prune()
+     */
+    get links() {
+        return this.G.edges().map(e => [[e.v, e.w], this.G.edge(e)]);
     }
     /**
      * Reference to the PSICQuic object used to add/delete Mitab lines.

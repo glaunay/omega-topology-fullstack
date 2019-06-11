@@ -65,13 +65,13 @@ export default class OmegaTopology {
     }
 
     /**
-     * Prune and renew the graph.
-     * 
-     * @param {number} [max_distance=5] If you want all the connex composants, use -1
-     * @param {...string[]} seeds All the seeds you want to search
+     * Make all nodes "visible" (reverse a prune) then construct the graph.
+     *
+     * @param {string[]} seeds
      * @returns {Graph}
+     * @memberof OmegaTopology
      */
-    prune(max_distance: number = 5, ...seeds: string[]) : Graph {
+    constructGraphFrom(seeds: string[]) : Graph {
         console.log(seeds);
 
         // Set all nodes visible
@@ -79,7 +79,18 @@ export default class OmegaTopology {
             datum.visible = true;
         }
 
-        this.G = this.makeGraph();
+        return this.G = this.makeGraph();
+    }
+
+    /**
+     * Prune and renew the graph.
+     * 
+     * @param {number} [max_distance=5] If you want all the connex composants, use -1 or ±Infinity
+     * @param {...string[]} seeds All the seeds you want to search
+     * @returns {Graph}
+     */
+    prune(max_distance: number = 5, ...seeds: string[]) : Graph {
+        this.constructGraphFrom(seeds);
 
         let t = Date.now();
         console.log("Graph has", this.G.nodeCount(), "nodes and", this.G.edgeCount(), "edges");
@@ -93,7 +104,7 @@ export default class OmegaTopology {
             // this.showNode(n);
 
             if (_seeds.has(n)) {
-                this.G.setNode(n, { group: 1 });
+                this.G.setNode(n, { group: 1, val: 0 });
                 seed_set.push(n);
             }
             else {
@@ -119,7 +130,7 @@ export default class OmegaTopology {
                 let visited = new Set([initial]);
 
                 while (distance !== 0 && to_visit.size) {
-                    let tampon = new Set;
+                    let tampon = new Set<string>();
                     // Ajout de chaque voisin des voisins
                     for (const visitor of to_visit) {
                         if (!visited.has(visitor)) {
@@ -431,7 +442,7 @@ export default class OmegaTopology {
     /**
      * Get all the visible nodes in OmegaTopology object.
      */
-    get nodes() {
+    get legacy_nodes() {
         const nodes: { [id: string]: Set<any> } = {};
 
         for (const [n1, n2, e] of this.iterVisible()) {
@@ -449,6 +460,22 @@ export default class OmegaTopology {
         }
 
         return nodes;
+    }
+
+    /**
+     * Get all the nodes.
+     * Graph must have been constructed with .constructGraphFrom() or .prune()
+     */
+    get nodes() : [string, NodeGraphComponent][] {
+        return this.G.nodes().map(n => [n, this.G.node(n)]);
+    }
+
+    /**
+     * Get all the links.
+     * Graph must have been constructed with .constructGraphFrom() or .prune()
+     */
+    get links() : [[string, string], HoParameterSet][] {
+        return this.G.edges().map(e => [[e.v, e.w], this.G.edge(e)]);
     }
 
     /**
