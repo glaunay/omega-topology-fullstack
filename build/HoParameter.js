@@ -122,9 +122,14 @@ class HoParameterSet {
         param.visible = obj.visible;
         return param;
     }
-    *[Symbol.iterator]() {
+    *full_iterator() {
         // @ts-ignore
         for (const values of python_zip_1.default(this.lowQueryParam, this.highQueryParam, this.mitabCouples)) {
+            yield values;
+        }
+    }
+    *[Symbol.iterator]() {
+        for (const values of python_zip_1.default(this.lowQueryParam, this.highQueryParam)) {
             yield values;
         }
     }

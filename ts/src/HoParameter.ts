@@ -157,10 +157,16 @@ export class HoParameterSet {
         return param;
     }
 
-    *[Symbol.iterator]() : IterableIterator<[HoParameter, HoParameter, PSQData[]]> {
+    *full_iterator() : IterableIterator<[HoParameter, HoParameter, PSQData[]]> {
         // @ts-ignore
         for (const values of zip(this.lowQueryParam, this.highQueryParam, this.mitabCouples)) {
             yield values as [HoParameter, HoParameter, PSQData[]];
+        }
+    }
+
+    *[Symbol.iterator]() : IterableIterator<[HoParameter, HoParameter]> {
+        for (const values of zip(this.lowQueryParam, this.highQueryParam)) {
+            yield values as [HoParameter, HoParameter];
         }
     }
 }

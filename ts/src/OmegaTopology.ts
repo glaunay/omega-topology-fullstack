@@ -572,7 +572,7 @@ export default class OmegaTopology {
         const exp = new Set<string>();
 
         for (const [,, parameter] of this.iterVisible()) {
-            for (const [,, lines] of parameter) {
+            for (const [,, lines] of parameter.full_iterator()) {
                 for (const line of lines) {
                     exp.add(line.interactionDetectionMethod);
                 }
@@ -586,7 +586,7 @@ export default class OmegaTopology {
         const exp = new Set<string>();
 
         for (const [,, parameter] of this.iterVisible()) {
-            for (const [,, lines] of parameter) {
+            for (const [,, lines] of parameter.full_iterator()) {
                 for (const line of lines) {
                     const tax_ids = line.taxid;
                     exp.add(tax_ids[0]).add(tax_ids[1]);
