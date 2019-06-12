@@ -178,7 +178,7 @@ class OmegaTopology {
         const templateColl = new MDTree_1.MDTree(false);
         const gen = fromVisible ? this.iterVisible() : this[Symbol.iterator]();
         for (const [, , e] of gen) {
-            const templates = e.templates;
+            const templates = fromVisible ? e.templates : e.full_templates;
             for (const [t1, t2] of python_zip_1.default(...templates)) {
                 templateColl.getOrSet(t1, t2, true);
             }

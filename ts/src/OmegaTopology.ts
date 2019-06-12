@@ -235,7 +235,7 @@ export default class OmegaTopology {
         const gen = fromVisible ? this.iterVisible() : this[Symbol.iterator]();
 
         for (const [, , e] of gen) {
-            const templates = e.templates;
+            const templates = fromVisible ? e.templates : e.full_templates;
 
             for (const [t1, t2] of zip(...templates)) {
                 templateColl.getOrSet(t1, t2, true);
