@@ -175,7 +175,7 @@ class PSQField {
         return this.value === field.value && this.type === field.type && this.annotation === field.annotation;
     }
     toString() {
-        return "";
+        return (this.type ? this.type : "") + (this.value ? `"${this.value}"` : "") + (this.annotation ? `(${this.annotation})` : "");
         // return this.raw;
     }
     get [Symbol.toStringTag]() {

@@ -44,6 +44,12 @@ class HoParameterSet {
             this.highQueryParam.filter(e => e.valid).map(e => e.template)
         ];
     }
+    get full_templates() {
+        return [
+            this.lowQueryParam.map(e => e.template),
+            this.highQueryParam.map(e => e.template)
+        ];
+    }
     add(x, y) {
         this.lowQueryParam.push(new HoParameter(x));
         this.highQueryParam.push(new HoParameter(y));

@@ -226,7 +226,7 @@ export class PSQField {
     }
 
     toString() {
-        return "";
+        return (this.type ? this.type : "") + (this.value ? `"${this.value}"` : "") + (this.annotation ? `(${this.annotation})` : "");
         // return this.raw;
     }
 

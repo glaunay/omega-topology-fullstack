@@ -11,6 +11,7 @@ export declare class HoParameterSet {
     readonly length: number;
     readonly isEmpty: boolean;
     readonly templates: [string[], string[]];
+    readonly full_templates: [string[], string[]];
     add(x: HVector, y: HVector): void;
     trim(simPct?: number, idPct?: number, cvPct?: number, eValue?: number, definitive?: boolean): void;
     static from(obj: {

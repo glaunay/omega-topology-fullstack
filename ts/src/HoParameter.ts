@@ -50,6 +50,13 @@ export class HoParameterSet {
         ] as [string[], string[]];
     }
 
+    get full_templates() {
+        return [
+            this.lowQueryParam.map(e => e.template),
+            this.highQueryParam.map(e => e.template)
+        ] as [string[], string[]];
+    }
+
     add(x: HVector, y: HVector) {
         this.lowQueryParam.push(new HoParameter(x));
         this.highQueryParam.push(new HoParameter(y));
