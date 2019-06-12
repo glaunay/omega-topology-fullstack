@@ -38,7 +38,7 @@ export declare class HoParameterSet {
         }[];
         visible: boolean;
     }): HoParameterSet;
-    [Symbol.iterator](): IterableIterator<[HoParameter, HoParameter]>;
+    [Symbol.iterator](): IterableIterator<[HoParameter, HoParameter, PSQData[]]>;
 }
 export declare class HoParameter {
     data: HVector;

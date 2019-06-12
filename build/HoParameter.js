@@ -123,7 +123,8 @@ class HoParameterSet {
         return param;
     }
     *[Symbol.iterator]() {
-        for (const values of python_zip_1.default(this.lowQueryParam, this.highQueryParam)) {
+        // @ts-ignore
+        for (const values of python_zip_1.default(this.lowQueryParam, this.highQueryParam, this.mitabCouples)) {
             yield values;
         }
     }

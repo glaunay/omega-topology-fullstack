@@ -218,6 +218,8 @@ export default class OmegaTopology {
      * Length of the homology tree.
      */
     readonly hDataLength: number;
+    readonly experimental_methods_in_graph: Set<string>;
+    readonly taxonomy_ids_in_graph: Set<string>;
     /**
      * Build the edges using the "reverse" method:
      * Ask the CouchDB what is the partners of all the keys of homology tree.
