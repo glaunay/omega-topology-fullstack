@@ -5,6 +5,7 @@ export declare class HoParameterSet {
     highQueryParam: HoParameter[];
     mitabCouples: PSQData[][];
     visible: boolean;
+    static DEFAULT_TAXON_SEARCH_MODE: number;
     toString(): string;
     remove(): void;
     readonly depth: number;
@@ -13,7 +14,19 @@ export declare class HoParameterSet {
     readonly templates: [string[], string[]];
     readonly full_templates: [string[], string[]];
     add(x: HVector, y: HVector): void;
-    trim(simPct?: number, idPct?: number, cvPct?: number, eValue?: number, definitive?: boolean): void;
+    /**
+     *
+     * @param Object Variables **exp_methods** and **taxons** are undefined OR Set of strings.
+     */
+    trim({ simPct, idPct, cvPct, eValue, exp_methods, taxons, definitive }?: {
+        simPct?: number;
+        idPct?: number;
+        cvPct?: number;
+        eValue?: number;
+        exp_methods?: any;
+        taxons?: any;
+        definitive?: boolean;
+    }): void;
     static from(obj: {
         lowQueryParam: {
             data: string[];

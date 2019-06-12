@@ -8,7 +8,7 @@ export declare class PSQData {
     equal(other: PSQData): boolean;
     toString(): string;
     readonly [Symbol.toStringTag]: string;
-    readonly taxid: string[];
+    readonly taxid: [string, string];
     readonly pmid: string;
     readonly source: string;
     readonly interactionDetectionMethod: string;

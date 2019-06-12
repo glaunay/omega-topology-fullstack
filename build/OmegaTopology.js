@@ -25,6 +25,7 @@ class OmegaTopology {
          */
         this.ajdTree = new MDTree_1.MDTree(false);
         this.init_promise = Promise.resolve();
+        this.mitab_loaded = false;
         this.hData = homologyTree;
         this.baseTopology = mitabObj ? mitabObj : new PSICQuic_1.default;
         this.G = new graphlib_1.Graph({ directed: false });
@@ -398,6 +399,7 @@ class OmegaTopology {
             }
             ho_parameter_set.mitabCouples = lines_for_this_parameter;
         }
+        this.mitab_loaded = true;
     }
     /**
      * Read MI Tab lines and register then in PSICQuic object.
@@ -516,47 +518,42 @@ class OmegaTopology {
         console.log(this.edgeNumber, "interactions unpacked from", nbBase);
     }
     /**
-     * Like trimEdges(), but remove the nodes definitively from internal tree.
-     * (Useful for free RAM and speed up the prune process)
-     *
-     * @param {number} [simPic=0]
-     * @param {number} [idPct=0]
-     * @param {number} [cvPct=0]
-     * @returns {[number, number]} [number of deleted edges, total edges count]
-     */
-    definitiveTrim(simPic = 0, idPct = 0, cvPct = 0) {
-        let nDel = 0;
-        let nTot = 0;
-        for (const [x, y, HoParameterSetObj] of this) {
-            nTot++;
-            HoParameterSetObj.trim(simPic, idPct, cvPct, undefined, true);
-            if (HoParameterSetObj.isEmpty) {
-                nDel++;
-                this.ajdTree.remove(x, y);
-            }
-        }
-        return [nDel, nTot];
-    }
-    /**
      * Trim edges that don't meet the threshold.
      * Trimmed edges won't be visible using iterVisible() and won't be
      * present during the next's prune() calls.
      *
      * This trim is not definitive, you can use to hide edges then make then visible again with a further call.
      *
-     * @param {number} [simPic=0] Similarity threshold
-     * @param {number} [idPct=0] Identity threshold
-     * @param {number} [cvPct=0] Coverage threshold
-     * @returns {[number, number]} [number of deleted edges, total edges count]
+     * If definitive = true, remove the nodes definitively from internal tree (useful for free RAM and speed up the prune process).
+     *
+     * @param [simPct=0] Similarity (default 0)
+     * @param [idPct=0] Identity (default 0)
+     * @param [cvPct=0] Coverage (default 0)
+     * @param [eValue=1] E-value (default 1)
+     * @param definitive Definitive trim (default false)
+     * @param exp_det_methods Experimental detection methods required. Must be an array of **string**. Empty array if any type of detection is allowed.
+     * @param taxons Valid taxons required. Must be an array of **string**. Empty array if any taxon is allowed.
+     * @returns [number of deleted edges, total edges count]
      */
-    trimEdges(simPic = 0, idPct = 0, cvPct = 0) {
+    trimEdges({ simPct = 0, idPct = 0, cvPct = 0, eValue = 1, exp_det_methods = [], taxons = [], definitive = false } = {}) {
         let nDel = 0;
         let nTot = 0;
-        for (const [, , HoParameterSetObj] of this) {
+        for (const [x, y, HoParameterSetObj] of this) {
             nTot++;
-            HoParameterSetObj.trim(simPic, idPct, cvPct);
+            HoParameterSetObj.trim({
+                simPct,
+                idPct,
+                cvPct,
+                eValue,
+                exp_methods: exp_det_methods.length ? new Set(exp_det_methods) : undefined,
+                taxons: taxons.length ? new Set(taxons) : undefined,
+                definitive
+            });
             if (HoParameterSetObj.isEmpty) {
                 nDel++;
+                if (definitive) {
+                    this.ajdTree.remove(x, y);
+                }
             }
         }
         return [nDel, nTot];

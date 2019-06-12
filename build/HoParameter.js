@@ -4,6 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const python_zip_1 = __importDefault(require("python-zip"));
+const python_enumerate_1 = __importDefault(require("python-enumerate"));
+const TAXON_EVERY = 0;
+const TAXON_SOME = 1;
 class HoParameterSet {
     constructor() {
         this.lowQueryParam = [];
@@ -53,24 +56,55 @@ class HoParameterSet {
     add(x, y) {
         this.lowQueryParam.push(new HoParameter(x));
         this.highQueryParam.push(new HoParameter(y));
+        this.mitabCouples.push([]);
     }
-    trim(simPct = 0, idPct = 0, cvPct = 0, eValue = 1, definitive = false) {
+    /**
+     *
+     * @param Object Variables **exp_methods** and **taxons** are undefined OR Set of strings.
+     */
+    trim({ simPct = 0, idPct = 0, cvPct = 0, eValue = 1, exp_methods = undefined, taxons = undefined, definitive = false } = {}) {
         this.visible = true;
         const to_remove = [];
-        let i = 0;
-        for (const [loHparam, hiHparam] of this) {
+        for (const [index, parameters] of python_enumerate_1.default(this)) {
+            const [loHparam, hiHparam] = parameters;
             loHparam.valid = loHparam.simPct >= simPct && loHparam.idPct >= idPct && loHparam.cvPct >= cvPct && loHparam.eValue <= eValue;
             hiHparam.valid = hiHparam.simPct >= simPct && hiHparam.idPct >= idPct && hiHparam.cvPct >= cvPct && hiHparam.eValue <= eValue;
-            ;
+            // Si on cherche à valider taxon ou méthode de détection exp.
+            if ((exp_methods || taxons) && loHparam.valid && hiHparam.valid) {
+                const mitab_lines_of = this.mitabCouples[index];
+                let valid = false;
+                // Si une des lignes mitab décrivant l'interaction contient une des méthodes expérimentales de détection choisies 
+                // ET si le taxon d'où provient l'observation de cette interaction est valide
+                if (mitab_lines_of) {
+                    for (const line of mitab_lines_of) {
+                        // Si on recherche les méthodes expérimentales ET si l'actuelle est dans celles qu'on recherche
+                        // OU si on ne les recherche pas
+                        if ((exp_methods && exp_methods.has(line.interactionDetectionMethod)) ||
+                            !exp_methods) {
+                            // Si on recherche les taxons
+                            if (taxons) {
+                                valid = HoParameterSet.DEFAULT_TAXON_SEARCH_MODE === TAXON_EVERY ?
+                                    line.taxid.every(e => taxons.has(e)) :
+                                    line.taxid.some(e => taxons.has(e));
+                            }
+                            else {
+                                valid = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                loHparam.valid = hiHparam.valid = valid;
+            }
             if (!loHparam.valid || !hiHparam.valid) {
                 loHparam.valid = hiHparam.valid = false;
-                to_remove.push(i);
+                to_remove.push(index);
             }
-            i++;
         }
         if (definitive) {
             this.lowQueryParam = this.lowQueryParam.filter((_, index) => !to_remove.includes(index));
             this.highQueryParam = this.highQueryParam.filter((_, index) => !to_remove.includes(index));
+            this.mitabCouples = this.mitabCouples.filter((_, index) => !to_remove.includes(index));
         }
     }
     static from(obj) {
@@ -94,6 +128,7 @@ class HoParameterSet {
         }
     }
 }
+HoParameterSet.DEFAULT_TAXON_SEARCH_MODE = TAXON_EVERY;
 exports.HoParameterSet = HoParameterSet;
 class HoParameter {
     constructor(hVector) {

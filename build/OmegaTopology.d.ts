@@ -27,6 +27,7 @@ export default class OmegaTopology {
      */
     protected baseTopology: PSICQuic;
     protected init_promise: Promise<void>;
+    protected mitab_loaded: boolean;
     /**
      * GRAPH
      * Node type: string
@@ -243,28 +244,32 @@ export default class OmegaTopology {
      */
     buildEdges(): void;
     /**
-     * Like trimEdges(), but remove the nodes definitively from internal tree.
-     * (Useful for free RAM and speed up the prune process)
-     *
-     * @param {number} [simPic=0]
-     * @param {number} [idPct=0]
-     * @param {number} [cvPct=0]
-     * @returns {[number, number]} [number of deleted edges, total edges count]
-     */
-    definitiveTrim(simPic?: number, idPct?: number, cvPct?: number): [number, number];
-    /**
      * Trim edges that don't meet the threshold.
      * Trimmed edges won't be visible using iterVisible() and won't be
      * present during the next's prune() calls.
      *
      * This trim is not definitive, you can use to hide edges then make then visible again with a further call.
      *
-     * @param {number} [simPic=0] Similarity threshold
-     * @param {number} [idPct=0] Identity threshold
-     * @param {number} [cvPct=0] Coverage threshold
-     * @returns {[number, number]} [number of deleted edges, total edges count]
+     * If definitive = true, remove the nodes definitively from internal tree (useful for free RAM and speed up the prune process).
+     *
+     * @param [simPct=0] Similarity (default 0)
+     * @param [idPct=0] Identity (default 0)
+     * @param [cvPct=0] Coverage (default 0)
+     * @param [eValue=1] E-value (default 1)
+     * @param definitive Definitive trim (default false)
+     * @param exp_det_methods Experimental detection methods required. Must be an array of **string**. Empty array if any type of detection is allowed.
+     * @param taxons Valid taxons required. Must be an array of **string**. Empty array if any taxon is allowed.
+     * @returns [number of deleted edges, total edges count]
      */
-    trimEdges(simPic?: number, idPct?: number, cvPct?: number): [number, number];
+    trimEdges({ simPct, idPct, cvPct, eValue, exp_det_methods, taxons, definitive }?: {
+        simPct?: number;
+        idPct?: number;
+        cvPct?: number;
+        eValue?: number;
+        exp_det_methods?: any[];
+        taxons?: any[];
+        definitive?: boolean;
+    }): [number, number];
     toString(): string;
     /**
      * Add a couple of HomologChildren to internal tree.

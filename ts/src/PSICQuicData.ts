@@ -46,7 +46,7 @@ export class PSQData {
     }
 
     get taxid() {
-        return [this.data[9].content[0][1], this.data[10].content[0][1]];
+        return [this.data[9].content[0][1], this.data[10].content[0][1]] as [string, string];
     }
 
     get pmid() {
