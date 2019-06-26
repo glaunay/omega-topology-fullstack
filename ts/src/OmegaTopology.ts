@@ -123,7 +123,7 @@ export default class OmegaTopology {
         }
         else {
             // Gettings neighboors for a specific distance
-            const getAvailableNeighboors = (initial: string, distance: number) => {
+            const getAvailableNeighboors = (initial: string, distance: number) : Set<string> => {
                 const node = this.G.node(initial);
                 if (!node) {
                     return new Set;
@@ -159,14 +159,17 @@ export default class OmegaTopology {
             };
 
             // console.log(this.G);
+            let global_set = new Set<string>();
             for (const seed of seed_set) {
-                const paths_f_seed = getAvailableNeighboors(seed, max_distance);
+                for (const el of getAvailableNeighboors(seed, max_distance)) {
+                    global_set.add(el);
+                }
+            }
 
-                for (const node of other_set) {
-                    if (!paths_f_seed.has(node)) {
-                        this.G.removeNode(node);
-                        this.hideNode(node);
-                    }
+            for (const node of other_set) {
+                if (!global_set.has(node)) {
+                    this.G.removeNode(node);
+                    this.hideNode(node);
                 }
             }
         }

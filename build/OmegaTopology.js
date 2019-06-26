@@ -112,13 +112,16 @@ class OmegaTopology {
                 return visited;
             };
             // console.log(this.G);
+            let global_set = new Set();
             for (const seed of seed_set) {
-                const paths_f_seed = getAvailableNeighboors(seed, max_distance);
-                for (const node of other_set) {
-                    if (!paths_f_seed.has(node)) {
-                        this.G.removeNode(node);
-                        this.hideNode(node);
-                    }
+                for (const el of getAvailableNeighboors(seed, max_distance)) {
+                    global_set.add(el);
+                }
+            }
+            for (const node of other_set) {
+                if (!global_set.has(node)) {
+                    this.G.removeNode(node);
+                    this.hideNode(node);
                 }
             }
         }
