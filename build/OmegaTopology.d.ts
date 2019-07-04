@@ -218,7 +218,9 @@ export default class OmegaTopology {
      * Length of the homology tree.
      */
     readonly hDataLength: number;
+    readonly visible_experimental_methods_in_graph: Set<string>;
     readonly experimental_methods_in_graph: Set<string>;
+    readonly visible_taxonomy_ids_in_graph: Set<string>;
     readonly taxonomy_ids_in_graph: Set<string>;
     /**
      * Build the edges using the "reverse" method:

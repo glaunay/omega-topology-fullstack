@@ -157,10 +157,17 @@ export class HoParameterSet {
         return param;
     }
 
-    *full_iterator() : IterableIterator<[HoParameter, HoParameter, PSQData[]]> {
+    *full_iterator(visible_only = false) : IterableIterator<[HoParameter, HoParameter, PSQData[]]> {
         // @ts-ignore
-        for (const values of zip(this.lowQueryParam, this.highQueryParam, this.mitabCouples)) {
-            yield values as [HoParameter, HoParameter, PSQData[]];
+        for (const values of zip(this.lowQueryParam, this.highQueryParam, this.mitabCouples) as IterableIterator<[HoParameter, HoParameter, PSQData[]]>) {
+            if (visible_only) {
+                if (values[0].valid && values[1].valid) {
+                    yield values;
+                }
+            }
+            else {
+                yield values;
+            }
         }
     }
 

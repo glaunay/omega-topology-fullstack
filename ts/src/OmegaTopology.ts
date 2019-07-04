@@ -571,6 +571,20 @@ export default class OmegaTopology {
         return this.hData ? this.hData.length : 0;
     }
 
+    get visible_experimental_methods_in_graph() {
+        const exp = new Set<string>();
+
+        for (const [,, parameter] of this.iterVisible()) {
+            for (const [,, lines] of parameter.full_iterator(true)) {
+                for (const line of lines) {
+                    exp.add(line.interactionDetectionMethod);
+                }
+            }
+        }
+
+        return exp;
+    }
+
     get experimental_methods_in_graph() {
         const exp = new Set<string>();
 
@@ -578,6 +592,21 @@ export default class OmegaTopology {
             for (const [,, lines] of parameter.full_iterator()) {
                 for (const line of lines) {
                     exp.add(line.interactionDetectionMethod);
+                }
+            }
+        }
+
+        return exp;
+    }
+
+    get visible_taxonomy_ids_in_graph() {
+        const exp = new Set<string>();
+
+        for (const [,, parameter] of this.iterVisible()) {
+            for (const [,, lines] of parameter.full_iterator(true)) {
+                for (const line of lines) {
+                    const tax_ids = line.taxid;
+                    exp.add(tax_ids[0]).add(tax_ids[1]);
                 }
             }
         }
