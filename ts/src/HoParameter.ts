@@ -102,8 +102,6 @@ export class HoParameterSet {
             if ((exp_methods || taxons) && loHparam.valid && hiHparam.valid) {
                 const mitab_lines_of = this.mitabCouples[index];
 
-                let valid = false;
-
                 // Si une des lignes mitab décrivant l'interaction contient une des méthodes expérimentales de détection choisies 
                 // ET si le taxon d'où provient l'observation de cette interaction est valide
                 if (mitab_lines_of) {
