@@ -86,7 +86,6 @@ class HoParameterSet {
                         // OU si on ne les recherche pas
                         if ((exp_methods && exp_methods.has(line.data.interactionDetectionMethod)) ||
                             !exp_methods) {
-                            console.log(exp_methods, line.data.interactionDetectionMethod);
                             // Si on recherche les taxons
                             if (taxons) {
                                 valid = HoParameterSet.DEFAULT_TAXON_SEARCH_MODE === TAXON_EVERY ?
@@ -97,9 +96,10 @@ class HoParameterSet {
                                 valid = true;
                             }
                         }
-                        if (!valid) {
-                            line.valid = false;
+                        if (line.data.hash === "ea225c44698a10c9cb8590512ec6d21c") {
+                            console.log(exp_methods, line);
                         }
+                        line.valid = valid;
                     }
                 }
                 loHparam.valid = hiHparam.valid = mitab_lines_of.some(e => e.valid);
