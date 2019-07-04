@@ -81,28 +81,24 @@ class HoParameterSet {
                 // Si une des lignes mitab décrivant l'interaction contient une des méthodes expérimentales de détection choisies 
                 // ET si le taxon d'où provient l'observation de cette interaction est valide
                 if (mitab_lines_of) {
-                    for (const line of mitab_lines_of) {
-                        // Si on recherche les méthodes expérimentales ET si l'actuelle est dans celles qu'on recherche
-                        // OU si on ne les recherche pas
-                        if ((exp_methods && exp_methods.has(line.data.interactionDetectionMethod)) ||
-                            !exp_methods) {
-                            // Si on recherche les taxons
-                            if (taxons) {
-                                valid = HoParameterSet.DEFAULT_TAXON_SEARCH_MODE === TAXON_EVERY ?
-                                    line.data.taxid.every(e => taxons.has(e)) :
-                                    line.data.taxid.some(e => taxons.has(e));
-                            }
-                            else {
-                                valid = true;
-                            }
-                        }
-                        line.valid = valid;
+                    if (exp_methods) {
+                        mitab_lines_of.forEach(l => l.valid = exp_methods.has(l.data.interactionDetectionMethod));
+                    }
+                    if (taxons) {
+                        mitab_lines_of.forEach(l => l.valid = (!l.valid ?
+                            false :
+                            (HoParameterSet.DEFAULT_TAXON_SEARCH_MODE === TAXON_EVERY ?
+                                l.data.taxid.every(e => taxons.has(e)) :
+                                l.data.taxid.some(e => taxons.has(e)))));
                     }
                 }
                 loHparam.valid = hiHparam.valid = mitab_lines_of.filter(e => e.valid).length > 0;
             }
             if (!loHparam.valid || !hiHparam.valid) {
                 loHparam.valid = hiHparam.valid = false;
+                if (this.mitabCouples[index]) {
+                    this.mitabCouples[index].forEach(m => m.valid = false);
+                }
                 to_remove.push(index);
             }
         }
