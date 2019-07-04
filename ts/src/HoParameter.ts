@@ -125,14 +125,11 @@ export class HoParameterSet {
                             }
                         }
 
-                        if (line.data.hash === "ea225c44698a10c9cb8590512ec6d21c") {
-                            console.log(exp_methods, line);
-                        }
                         line.valid = valid;
                     }
                 }
                 
-                loHparam.valid = hiHparam.valid = mitab_lines_of.some(e => e.valid); 
+                loHparam.valid = hiHparam.valid = mitab_lines_of.filter(e => e.valid).length > 0; 
             }
 
             if (!loHparam.valid || !hiHparam.valid) {
