@@ -3,7 +3,7 @@ export declare type HVector = string[];
 export declare class HoParameterSet {
     lowQueryParam: HoParameter[];
     highQueryParam: HoParameter[];
-    mitabCouples: PSQData[][];
+    mitabCouples: MitabParameter[][];
     visible: boolean;
     static DEFAULT_TAXON_SEARCH_MODE: number;
     toString(): string;
@@ -40,6 +40,11 @@ export declare class HoParameterSet {
     }): HoParameterSet;
     full_iterator(visible_only?: boolean): IterableIterator<[HoParameter, HoParameter, PSQData[]]>;
     [Symbol.iterator](): IterableIterator<[HoParameter, HoParameter]>;
+}
+export declare class MitabParameter {
+    data: PSQData;
+    valid: boolean;
+    constructor(d: PSQData);
 }
 export declare class HoParameter {
     data: HVector;

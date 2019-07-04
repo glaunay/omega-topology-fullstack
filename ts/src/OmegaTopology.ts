@@ -1,6 +1,6 @@
 import HomologTree, { HomologChildren } from "./HomologyTree";
 import { Graph, json as GraphJSON } from "graphlib";
-import { HoParameterSet, HoParameter } from "./HoParameter";
+import { HoParameterSet, HoParameter, MitabParameter } from "./HoParameter";
 import { MDTree } from './MDTree';
 import PartnersMap from './PartnersMap';
 import { setUnion } from './helpers';
@@ -504,7 +504,7 @@ export default class OmegaTopology {
                 lines_for_this_parameter.push(this.psi.getLines(id_a, id_b));
             }
 
-            ho_parameter_set.mitabCouples = lines_for_this_parameter;
+            ho_parameter_set.mitabCouples = lines_for_this_parameter.map(e => e.map(d => new MitabParameter(d)));
         }
 
         this.mitab_loaded = true;

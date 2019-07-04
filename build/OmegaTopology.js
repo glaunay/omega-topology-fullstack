@@ -400,7 +400,7 @@ class OmegaTopology {
                 const [id_a, id_b] = [ho_a.template, ho_b.template];
                 lines_for_this_parameter.push(this.psi.getLines(id_a, id_b));
             }
-            ho_parameter_set.mitabCouples = lines_for_this_parameter;
+            ho_parameter_set.mitabCouples = lines_for_this_parameter.map(e => e.map(d => new HoParameter_1.MitabParameter(d)));
         }
         this.mitab_loaded = true;
     }

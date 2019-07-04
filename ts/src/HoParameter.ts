@@ -10,18 +10,18 @@ const TAXON_SOME = 1;
 export class HoParameterSet {
     public lowQueryParam: HoParameter[] = [];
     public highQueryParam: HoParameter[] = [];
-    public mitabCouples: PSQData[][] = [];
+    public mitabCouples: MitabParameter[][] = [];
     public visible = true;
 
     public static DEFAULT_TAXON_SEARCH_MODE = TAXON_EVERY;
 
     toString() {
-        const mitabCouples = [];
+        const mitabCouples: PSQData[][] = [];
 
         return JSON.stringify({
             lowQueryParam: this.lowQueryParam.filter((e, index) => { 
                 if (e.valid && String(index) in this.mitabCouples) {
-                    mitabCouples.push(this.mitabCouples[index]);
+                    mitabCouples.push(this.mitabCouples[index].filter(e => e.valid).map(e => e.data));
                 }
                 
                 return e.valid; 
@@ -92,6 +92,11 @@ export class HoParameterSet {
             loHparam.valid = loHparam.simPct >= simPct && loHparam.idPct >= idPct && loHparam.cvPct >= cvPct && loHparam.eValue <= eValue;
             hiHparam.valid = hiHparam.simPct >= simPct && hiHparam.idPct >= idPct && hiHparam.cvPct >= cvPct && hiHparam.eValue <= eValue;
 
+            // Remise à 0 des lignes mitab
+            for (const m of this.mitabCouples[index]) {
+                m.valid = true;
+            }
+
             // Si on cherche à valider taxon ou méthode de détection exp.
             if ((exp_methods || taxons) && loHparam.valid && hiHparam.valid) {
                 const mitab_lines_of = this.mitabCouples[index];
@@ -105,24 +110,27 @@ export class HoParameterSet {
                         // Si on recherche les méthodes expérimentales ET si l'actuelle est dans celles qu'on recherche
                         // OU si on ne les recherche pas
                         if (
-                            (exp_methods && (exp_methods as Set<string>).has(line.interactionDetectionMethod)) || 
+                            (exp_methods && (exp_methods as Set<string>).has(line.data.interactionDetectionMethod)) || 
                             !exp_methods
                         ) {
                             // Si on recherche les taxons
                             if (taxons) {
                                 valid = HoParameterSet.DEFAULT_TAXON_SEARCH_MODE === TAXON_EVERY ?
-                                    line.taxid.every(e => (taxons as Set<string>).has(e)) :
-                                    line.taxid.some(e => (taxons as Set<string>).has(e));
+                                    line.data.taxid.every(e => (taxons as Set<string>).has(e)) :
+                                    line.data.taxid.some(e => (taxons as Set<string>).has(e));
                             }
                             else {
                                 valid = true;
-                                break;
                             }
+                        }
+
+                        if (!valid) {
+                            line.valid = false;
                         }
                     }
                 }
                 
-                loHparam.valid = hiHparam.valid = valid; 
+                loHparam.valid = hiHparam.valid = mitab_lines_of.some(e => e.valid); 
             }
 
             if (!loHparam.valid || !hiHparam.valid) {
@@ -159,14 +167,14 @@ export class HoParameterSet {
 
     *full_iterator(visible_only = false) : IterableIterator<[HoParameter, HoParameter, PSQData[]]> {
         // @ts-ignore
-        for (const values of zip(this.lowQueryParam, this.highQueryParam, this.mitabCouples) as IterableIterator<[HoParameter, HoParameter, PSQData[]]>) {
+        for (const values of zip(this.lowQueryParam, this.highQueryParam, this.mitabCouples) as IterableIterator<[HoParameter, HoParameter, MitabParameter[]]>) {
             if (visible_only) {
                 if (values[0].valid && values[1].valid) {
-                    yield values;
+                    yield [values[0], values[1], values[2].filter(e => e.valid).map(e => e.data)];
                 }
             }
             else {
-                yield values;
+                yield [values[0], values[1], values[2].map(e => e.data)];
             }
         }
     }
@@ -175,6 +183,15 @@ export class HoParameterSet {
         for (const values of zip(this.lowQueryParam, this.highQueryParam)) {
             yield values as [HoParameter, HoParameter];
         }
+    }
+}
+
+export class MitabParameter {
+    public data: PSQData;
+    public valid = true;
+
+    constructor(d: PSQData) {
+        this.data = d;
     }
 }
 
