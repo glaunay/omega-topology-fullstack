@@ -93,7 +93,7 @@ export class HoParameterSet {
             hiHparam.valid = hiHparam.simPct >= simPct && hiHparam.idPct >= idPct && hiHparam.cvPct >= cvPct && hiHparam.eValue <= eValue;
 
             // Remise à 0 des lignes mitab
-            if (this.mitabCouples[index])
+            if (!exp_methods && this.mitabCouples[index])
                 for (const m of this.mitabCouples[index]) {
                     m.valid = true;
                 }
