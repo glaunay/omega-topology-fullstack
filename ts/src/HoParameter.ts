@@ -114,6 +114,7 @@ export class HoParameterSet {
                             (exp_methods && (exp_methods as Set<string>).has(line.data.interactionDetectionMethod)) || 
                             !exp_methods
                         ) {
+                            console.log(exp_methods, line.data.interactionDetectionMethod)
                             // Si on recherche les taxons
                             if (taxons) {
                                 valid = HoParameterSet.DEFAULT_TAXON_SEARCH_MODE === TAXON_EVERY ?
