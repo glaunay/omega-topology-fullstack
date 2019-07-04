@@ -70,9 +70,10 @@ class HoParameterSet {
             loHparam.valid = loHparam.simPct >= simPct && loHparam.idPct >= idPct && loHparam.cvPct >= cvPct && loHparam.eValue <= eValue;
             hiHparam.valid = hiHparam.simPct >= simPct && hiHparam.idPct >= idPct && hiHparam.cvPct >= cvPct && hiHparam.eValue <= eValue;
             // Remise à 0 des lignes mitab
-            for (const m of this.mitabCouples[index]) {
-                m.valid = true;
-            }
+            if (this.mitabCouples[index])
+                for (const m of this.mitabCouples[index]) {
+                    m.valid = true;
+                }
             // Si on cherche à valider taxon ou méthode de détection exp.
             if ((exp_methods || taxons) && loHparam.valid && hiHparam.valid) {
                 const mitab_lines_of = this.mitabCouples[index];
