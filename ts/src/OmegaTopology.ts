@@ -1,6 +1,8 @@
 import HomologTree, { HomologChildren } from "./HomologyTree";
 import { Graph, json as GraphJSON } from "graphlib";
 import { HoParameterSet, HoParameter, MitabParameter } from "./HoParameter";
+import GoTermsContainer, { ProtGOTerms } from './GoTermsContainer';
+import UniprotContainer from './UniprotContainer';
 import { MDTree } from './MDTree';
 import PartnersMap from './PartnersMap';
 import { setUnion } from './helpers';
@@ -36,7 +38,11 @@ export default class OmegaTopology {
     protected baseTopology: PSICQuic; 
     protected init_promise = Promise.resolve();
 
+    /** True if mitab is loaded */
     protected mitab_loaded = false;
+
+    protected go_terms = new GoTermsContainer;
+    protected _uniprot_container = new UniprotContainer;
     
     /**
      * GRAPH
@@ -55,7 +61,7 @@ export default class OmegaTopology {
     constructor(homologyTree?: HomologTree, mitabObj?: PSICQuic) {
         this.hData = homologyTree;
         this.baseTopology = mitabObj ? mitabObj : new PSICQuic;
-        this.G = new Graph({directed: false});
+        this.G = new Graph({ directed: false });
     }
 
     /**
@@ -75,8 +81,6 @@ export default class OmegaTopology {
      * @memberof OmegaTopology
      */
     constructGraphFrom(seeds: string[]) : Graph {
-        console.log(seeds);
-
         // Set all nodes visible
         for (const [, , datum] of this) {
             datum.visible = true;
@@ -257,36 +261,6 @@ export default class OmegaTopology {
     }
 
     /**
-     * @deprecated
-     */
-    olduniqueTemplatePairs() : [string, string][] {
-        const set_pairs: {[id: string]: Set<string>} = {};
-        
-        for (const [pair1, pair2] of this.templatePairs()) {
-            const [p1, p2] = [pair1.data[0], pair2.data[0]];
-
-            const master_id = p1 > p2 ? p1 : p2;
-            const lower_id = p1 > p2 ? p2 : p1;
-
-            if (master_id in set_pairs) {
-                set_pairs[master_id].add(lower_id);
-            }
-            else {
-                set_pairs[master_id] = new Set([lower_id]);
-            }
-        }
-
-        // Unification
-        const unique_pairs: [string, string][] = [];
-
-        for (const id in set_pairs) {
-            unique_pairs.push(...Array.from(set_pairs[id]).map(e => [id, e]) as [string, string][]);
-        }
-
-        return unique_pairs;
-    }
-
-    /**
      * Dump the current generated graph to string.
      *
      * @param {boolean} [trim_invalid=true]
@@ -431,6 +405,23 @@ export default class OmegaTopology {
         return g;
     }
 
+    async downloadGoTerms(url: string, ...protein_ids: string[]) {
+        const req: ProtGOTerms = await fetch(url + "/go", {
+            method: 'POST',
+            body: JSON.stringify({ ids: protein_ids })
+        }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
+
+        this.go_terms.add(req);
+    }
+
+    get go_container() {
+        return this.go_terms;
+    }
+
+    get uniprot_container() {
+        return this._uniprot_container;
+    }
+    
     /**
      * Number of visible edges.
      */
