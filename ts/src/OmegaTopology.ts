@@ -58,7 +58,11 @@ export default class OmegaTopology {
      * @param {HomologTree} [homologyTree] If you want to use a tree, specify it here. Required to build edges.
      * @param {MitabTopology} [mitabObj] If you want to have a custom Mitab object, specify it here. Otherwise, create a new object with a empty PSICQuic obj.
      */
-    constructor(homologyTree?: HomologTree, mitabObj?: PSICQuic, uniprot_url?: string) {
+    constructor(
+        homologyTree?: HomologTree, 
+        mitabObj?: PSICQuic, 
+        protected uniprot_url?: string
+    ) {
         this.hData = homologyTree;
         this.baseTopology = mitabObj ? mitabObj : new PSICQuic;
         this._uniprot_container = new UniprotContainer(uniprot_url);
@@ -406,8 +410,8 @@ export default class OmegaTopology {
         return g;
     }
 
-    async downloadGoTerms(url: string, ...protein_ids: string[]) {
-        const req: ProtGOTerms = await fetch(url + "/go", {
+    async downloadGoTerms(...protein_ids: string[]) {
+        const req: ProtGOTerms = await fetch(this.uniprot_url + "/go", {
             method: 'POST',
             body: JSON.stringify({ ids: protein_ids })
         }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));

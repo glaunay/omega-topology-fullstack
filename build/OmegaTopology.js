@@ -22,6 +22,7 @@ class OmegaTopology {
      * @param {MitabTopology} [mitabObj] If you want to have a custom Mitab object, specify it here. Otherwise, create a new object with a empty PSICQuic obj.
      */
     constructor(homologyTree, mitabObj, uniprot_url) {
+        this.uniprot_url = uniprot_url;
         /**
          * Represents all the edges / nodes held by OmegaTopology.
          */
@@ -321,8 +322,8 @@ class OmegaTopology {
         }
         return g;
     }
-    async downloadGoTerms(url, ...protein_ids) {
-        const req = await fetch(url + "/go", {
+    async downloadGoTerms(...protein_ids) {
+        const req = await fetch(this.uniprot_url + "/go", {
             method: 'POST',
             body: JSON.stringify({ ids: protein_ids })
         }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));

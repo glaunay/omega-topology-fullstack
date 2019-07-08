@@ -15,6 +15,7 @@ interface SerializedOmegaTopology {
     version: number;
 }
 export default class OmegaTopology {
+    protected uniprot_url?: string;
     /**
      * Represents all the blast hits of current used organism.
      */
@@ -157,7 +158,7 @@ export default class OmegaTopology {
      * @returns {Graph}
      */
     protected makeGraph(): Graph;
-    downloadGoTerms(url: string, ...protein_ids: string[]): Promise<void>;
+    downloadGoTerms(...protein_ids: string[]): Promise<void>;
     getProteinInfos(protein_id: string): Promise<any>;
     /**
      * Graph must have been already builded !
