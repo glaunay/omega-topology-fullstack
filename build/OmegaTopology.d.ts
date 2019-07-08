@@ -1,6 +1,8 @@
 import HomologTree, { HomologChildren } from "./HomologyTree";
 import { Graph } from "graphlib";
 import { HoParameterSet, HoParameter } from "./HoParameter";
+import GoTermsContainer from './GoTermsContainer';
+import UniprotContainer from './UniprotContainer';
 import { MDTree } from './MDTree';
 import PSICQuic from "./PSICQuic";
 interface NodeGraphComponent {
@@ -27,7 +29,10 @@ export default class OmegaTopology {
      */
     protected baseTopology: PSICQuic;
     protected init_promise: Promise<void>;
+    /** True if mitab is loaded */
     protected mitab_loaded: boolean;
+    protected go_terms: GoTermsContainer;
+    protected _uniprot_container: UniprotContainer;
     /**
      * GRAPH
      * Node type: string
@@ -55,7 +60,7 @@ export default class OmegaTopology {
      * @returns {Graph}
      * @memberof OmegaTopology
      */
-    constructGraphFrom(seeds: string[]): Graph;
+    constructGraph(): Graph;
     /**
      * Prune and renew the graph.
      *
@@ -92,10 +97,6 @@ export default class OmegaTopology {
      * @returns {[string, string][]}
      */
     uniqueTemplatePairs(fromVisible?: boolean): [string, string][];
-    /**
-     * @deprecated
-     */
-    olduniqueTemplatePairs(): [string, string][];
     /**
      * Dump the current generated graph to string.
      *
@@ -157,6 +158,14 @@ export default class OmegaTopology {
      * @returns {Graph}
      */
     protected makeGraph(): Graph;
+    downloadGoTerms(url: string, ...protein_ids: string[]): Promise<void>;
+    getProteinInfos(protein_id: string): Promise<import("./UniprotContainer").UniprotProtein>;
+    /**
+     * Graph must have been already builded !
+     */
+    downloadNeededUniprotData(): Promise<void>;
+    readonly go_container: GoTermsContainer;
+    readonly uniprot_container: UniprotContainer;
     /**
      * Number of visible edges.
      */
@@ -165,12 +174,6 @@ export default class OmegaTopology {
      * Number of visible nodes.
      */
     readonly nodeNumber: number;
-    /**
-     * Get all the visible nodes in OmegaTopology object.
-     */
-    readonly legacy_nodes: {
-        [id: string]: Set<any>;
-    };
     /**
      * Get all the nodes.
      * Graph must have been constructed with .constructGraphFrom() or .prune()

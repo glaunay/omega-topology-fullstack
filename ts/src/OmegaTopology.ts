@@ -80,7 +80,7 @@ export default class OmegaTopology {
      * @returns {Graph}
      * @memberof OmegaTopology
      */
-    constructGraphFrom(seeds: string[]) : Graph {
+    constructGraph() : Graph {
         // Set all nodes visible
         for (const [, , datum] of this) {
             datum.visible = true;
@@ -97,7 +97,7 @@ export default class OmegaTopology {
      * @returns {Graph}
      */
     prune(max_distance: number = 5, ...seeds: string[]) : Graph {
-        this.constructGraphFrom(seeds);
+        this.constructGraph();
 
         let t = Date.now();
         console.log("Graph has", this.G.nodeCount(), "nodes and", this.G.edgeCount(), "edges");
@@ -414,6 +414,21 @@ export default class OmegaTopology {
         this.go_terms.add(req);
     }
 
+    async getProteinInfos(protein_id: string) {
+        return this.uniprot_container.getFullProtein(protein_id);
+    }
+
+    /**
+     * Graph must have been already builded !
+     */
+    async downloadNeededUniprotData() {
+        // Get all proteins ids
+        const nodes = this.G.nodes();
+
+        // Bulk download
+        await this.uniprot_container.bulkTiny(...nodes);
+    }
+
     get go_container() {
         return this.go_terms;
     }
@@ -434,29 +449,6 @@ export default class OmegaTopology {
      */
     get nodeNumber() : number {
         return Object.keys(this.nodes).length;
-    }
-
-    /**
-     * Get all the visible nodes in OmegaTopology object.
-     */
-    get legacy_nodes() {
-        const nodes: { [id: string]: Set<any> } = {};
-
-        for (const [n1, n2, e] of this.iterVisible()) {
-            const templates = e.templates;
-
-            nodes[n1] = nodes[n1] ? nodes[n1] : new Set;
-            for (const element of templates[0]) {
-                nodes[n1].add(element);
-            }
-
-            nodes[n2] = nodes[n2] ? nodes[n2] : new Set;
-            for (const element of templates[1]) {
-                nodes[n2].add(element);
-            }
-        }
-
-        return nodes;
     }
 
     /**

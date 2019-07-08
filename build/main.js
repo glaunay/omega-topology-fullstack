@@ -22,4 +22,6 @@ exports.MitabTopology = MitabTopology_1.default;
 const MDTree_1 = require("./MDTree");
 exports.MDTree = MDTree_1.MDTree;
 exports.DNTree = MDTree_1.DNTree;
+const GoTermsContainer_1 = __importDefault(require("./GoTermsContainer"));
+exports.GoTermsContainer = GoTermsContainer_1.default;
 exports.default = OmegaTopology_1.default;
