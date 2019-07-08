@@ -81,6 +81,12 @@ class GoTermsContainer {
         return undefined;
     }
     *[Symbol.iterator]() {
+        yield* this.values();
+    }
+    *entries() {
+        yield* this.data.entries();
+    }
+    *values() {
         for (const [id, v] of this.data) {
             yield [id, v[1]];
         }

@@ -33,6 +33,8 @@ export default class GoTermsContainer {
     searchByProt(prot_id: string): string[];
     getNameOfTerm(term_id: string): string;
     [Symbol.iterator](): IterableIterator<[string, Set<string>]>;
+    entries(): IterableIterator<[string, [string, Set<string>]]>;
+    values(): IterableIterator<[string, Set<string>]>;
     keys(): IterableIterator<string>;
     readonly length: number;
     clear(): void;

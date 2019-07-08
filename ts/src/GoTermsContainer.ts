@@ -93,6 +93,14 @@ export default class GoTermsContainer {
     }
 
     *[Symbol.iterator]() : IterableIterator<[string, Set<string>]> {
+        yield* this.values();
+    }
+
+    *entries() {
+        yield* this.data.entries();
+    }
+
+    *values() : IterableIterator<[string, Set<string>]> {
         for (const [id, v] of this.data) {
             yield [id, v[1]];
         }
