@@ -325,6 +325,7 @@ class OmegaTopology {
     async downloadGoTerms(...protein_ids) {
         const req = await fetch(this.uniprot_url + "/go", {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ids: protein_ids })
         }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
         this.go_terms.add(req);

@@ -20,6 +20,7 @@ class UniprotContainer {
     async downloadFullProteins(...prot_ids) {
         const req = await fetch(this.url + "/long", {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ids: prot_ids })
         }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
         for (const p of req) {
@@ -31,6 +32,7 @@ class UniprotContainer {
         prot_ids = prot_ids.filter(p => !this.tiny.has(p));
         const req = await fetch(this.url + "/short", {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ids: prot_ids })
         }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
         for (const p of req) {

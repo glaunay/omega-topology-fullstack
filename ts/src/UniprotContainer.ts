@@ -23,6 +23,7 @@ export default class UniprotContainer {
     protected async downloadFullProteins(...prot_ids: string[]) {
         const req: UniprotProtein[] = await fetch(this.url + "/long", {
             method: 'POST',
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ ids: prot_ids })
         }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
 
@@ -37,6 +38,7 @@ export default class UniprotContainer {
 
         const req: TinyProtein[] = await fetch(this.url + "/short", {
             method: 'POST',
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ ids: prot_ids })
         }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
 
