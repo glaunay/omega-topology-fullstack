@@ -1,7 +1,8 @@
 export default class UniprotContainer {
+    protected url: string;
     protected tiny: Map<string, TinyProtein>;
     protected full: Map<string, UniprotProtein>;
-    protected url: string;
+    constructor(url: string);
     getFullProtein(prot_id: string): Promise<UniprotProtein>;
     protected downloadFullProteins(...prot_ids: string[]): Promise<void>;
     bulkTiny(...prot_ids: string[]): Promise<void>;

@@ -42,7 +42,7 @@ export default class OmegaTopology {
     protected mitab_loaded = false;
 
     protected go_terms = new GoTermsContainer;
-    protected _uniprot_container = new UniprotContainer;
+    protected _uniprot_container;
     
     /**
      * GRAPH
@@ -58,9 +58,10 @@ export default class OmegaTopology {
      * @param {HomologTree} [homologyTree] If you want to use a tree, specify it here. Required to build edges.
      * @param {MitabTopology} [mitabObj] If you want to have a custom Mitab object, specify it here. Otherwise, create a new object with a empty PSICQuic obj.
      */
-    constructor(homologyTree?: HomologTree, mitabObj?: PSICQuic) {
+    constructor(homologyTree?: HomologTree, mitabObj?: PSICQuic, uniprot_url?: string) {
         this.hData = homologyTree;
         this.baseTopology = mitabObj ? mitabObj : new PSICQuic;
+        this._uniprot_container = new UniprotContainer(uniprot_url);
         this.G = new Graph({ directed: false });
     }
 

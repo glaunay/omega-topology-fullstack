@@ -2,7 +2,6 @@ import HomologTree, { HomologChildren } from "./HomologyTree";
 import { Graph } from "graphlib";
 import { HoParameterSet, HoParameter } from "./HoParameter";
 import GoTermsContainer from './GoTermsContainer';
-import UniprotContainer from './UniprotContainer';
 import { MDTree } from './MDTree';
 import PSICQuic from "./PSICQuic";
 interface NodeGraphComponent {
@@ -32,7 +31,7 @@ export default class OmegaTopology {
     /** True if mitab is loaded */
     protected mitab_loaded: boolean;
     protected go_terms: GoTermsContainer;
-    protected _uniprot_container: UniprotContainer;
+    protected _uniprot_container: any;
     /**
      * GRAPH
      * Node type: string
@@ -46,7 +45,7 @@ export default class OmegaTopology {
      * @param {HomologTree} [homologyTree] If you want to use a tree, specify it here. Required to build edges.
      * @param {MitabTopology} [mitabObj] If you want to have a custom Mitab object, specify it here. Otherwise, create a new object with a empty PSICQuic obj.
      */
-    constructor(homologyTree?: HomologTree, mitabObj?: PSICQuic);
+    constructor(homologyTree?: HomologTree, mitabObj?: PSICQuic, uniprot_url?: string);
     /**
      * Resolve when OmegaTopology is ready.
      *
@@ -159,13 +158,13 @@ export default class OmegaTopology {
      */
     protected makeGraph(): Graph;
     downloadGoTerms(url: string, ...protein_ids: string[]): Promise<void>;
-    getProteinInfos(protein_id: string): Promise<import("./UniprotContainer").UniprotProtein>;
+    getProteinInfos(protein_id: string): Promise<any>;
     /**
      * Graph must have been already builded !
      */
     downloadNeededUniprotData(): Promise<void>;
     readonly go_container: GoTermsContainer;
-    readonly uniprot_container: UniprotContainer;
+    readonly uniprot_container: any;
     /**
      * Number of visible edges.
      */

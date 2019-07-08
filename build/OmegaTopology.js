@@ -21,7 +21,7 @@ class OmegaTopology {
      * @param {HomologTree} [homologyTree] If you want to use a tree, specify it here. Required to build edges.
      * @param {MitabTopology} [mitabObj] If you want to have a custom Mitab object, specify it here. Otherwise, create a new object with a empty PSICQuic obj.
      */
-    constructor(homologyTree, mitabObj) {
+    constructor(homologyTree, mitabObj, uniprot_url) {
         /**
          * Represents all the edges / nodes held by OmegaTopology.
          */
@@ -30,9 +30,9 @@ class OmegaTopology {
         /** True if mitab is loaded */
         this.mitab_loaded = false;
         this.go_terms = new GoTermsContainer_1.default;
-        this._uniprot_container = new UniprotContainer_1.default;
         this.hData = homologyTree;
         this.baseTopology = mitabObj ? mitabObj : new PSICQuic_1.default;
+        this._uniprot_container = new UniprotContainer_1.default(uniprot_url);
         this.G = new graphlib_1.Graph({ directed: false });
     }
     /**

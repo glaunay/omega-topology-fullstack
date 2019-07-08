@@ -2,7 +2,9 @@ export default class UniprotContainer {
     protected tiny = new Map<string, TinyProtein>();
     protected full = new Map<string, UniprotProtein>();
 
-    protected url: string;
+    constructor(
+        protected url: string
+    ) { }
 
     async getFullProtein(prot_id: string) {
         if (this.full.has(prot_id)) {

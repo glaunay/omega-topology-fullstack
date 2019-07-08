@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class UniprotContainer {
-    constructor() {
+    constructor(url) {
+        this.url = url;
         this.tiny = new Map();
         this.full = new Map();
     }
