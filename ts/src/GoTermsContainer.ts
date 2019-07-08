@@ -23,6 +23,10 @@ export default class GoTermsContainer {
      * @param term 
      */    
     search(term: string) : string[] {
+        if (!term.startsWith('GO:')) {
+            term = "GO:" + term;
+        }
+
         if (this.data.has(term)) {
             return [...this.data.get(term)[1]];
         }
