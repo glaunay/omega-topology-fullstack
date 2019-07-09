@@ -85,13 +85,13 @@ export default class OmegaTopology {
      * @returns {Graph}
      * @memberof OmegaTopology
      */
-    constructGraph() : Graph {
+    constructGraph(build_edges_number = false) : Graph {
         // Set all nodes visible
         for (const [, , datum] of this) {
             datum.visible = true;
         }
 
-        return this.G = this.makeGraph();
+        return this.G = this.makeGraph(build_edges_number);
     }
 
     /**
@@ -400,12 +400,22 @@ export default class OmegaTopology {
      * 
      * @returns {Graph}
      */
-    protected makeGraph() {
+    protected makeGraph(build_edges_number = false) {
         const g = new Graph({ directed: false });
 
         for (const [n1, n2, edgeData] of this.iterVisible()) {
             g.setNode(n1, { group: 0, val: 0 }).setNode(n2, { group: 0, val: 0 }).setEdge(n1, n2, edgeData);
         }
+
+        if (build_edges_number)
+            for (const node of g.nodes()) {
+                const node_value = g.node(node) as NodeGraphComponent;
+                const edges = g.nodeEdges(node);
+
+                if (edges) {
+                    node_value.val = edges.length;
+                }
+            }
 
         return g;
     }

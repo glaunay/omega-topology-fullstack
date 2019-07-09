@@ -61,7 +61,7 @@ export default class OmegaTopology {
      * @returns {Graph}
      * @memberof OmegaTopology
      */
-    constructGraph(): Graph;
+    constructGraph(build_edges_number?: boolean): Graph;
     /**
      * Prune and renew the graph.
      *
@@ -158,7 +158,7 @@ export default class OmegaTopology {
      *
      * @returns {Graph}
      */
-    protected makeGraph(): Graph;
+    protected makeGraph(build_edges_number?: boolean): Graph;
     downloadGoTerms(...protein_ids: string[]): Promise<void>;
     getProteinInfos(protein_id: string): Promise<import("./UniprotContainer").UniprotProtein>;
     /**
