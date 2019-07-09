@@ -2,6 +2,7 @@ import HomologTree, { HomologChildren } from "./HomologyTree";
 import { Graph } from "graphlib";
 import { HoParameterSet, HoParameter } from "./HoParameter";
 import GoTermsContainer from './GoTermsContainer';
+import UniprotContainer from './UniprotContainer';
 import { MDTree } from './MDTree';
 import PSICQuic from "./PSICQuic";
 interface NodeGraphComponent {
@@ -32,7 +33,7 @@ export default class OmegaTopology {
     /** True if mitab is loaded */
     protected mitab_loaded: boolean;
     protected go_terms: GoTermsContainer;
-    protected _uniprot_container: any;
+    protected _uniprot_container: UniprotContainer;
     /**
      * GRAPH
      * Node type: string
@@ -159,13 +160,13 @@ export default class OmegaTopology {
      */
     protected makeGraph(): Graph;
     downloadGoTerms(...protein_ids: string[]): Promise<void>;
-    getProteinInfos(protein_id: string): Promise<any>;
+    getProteinInfos(protein_id: string): Promise<import("./UniprotContainer").UniprotProtein>;
     /**
      * Graph must have been already builded !
      */
     downloadNeededUniprotData(): Promise<void>;
     readonly go_container: GoTermsContainer;
-    readonly uniprot_container: any;
+    readonly uniprot_container: UniprotContainer;
     /**
      * Number of visible edges.
      */

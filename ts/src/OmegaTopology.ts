@@ -42,7 +42,7 @@ export default class OmegaTopology {
     protected mitab_loaded = false;
 
     protected go_terms = new GoTermsContainer;
-    protected _uniprot_container;
+    protected _uniprot_container: UniprotContainer;
     
     /**
      * GRAPH
