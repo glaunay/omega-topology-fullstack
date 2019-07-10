@@ -182,5 +182,6 @@ class PSQField {
         return "PSQField";
     }
 }
-PSQField.fieldParser = /^([^:^"]+:){0,1}"{0,1}([^"\(]+)"{0,1}\({0,1}([^\)]+){0,1}\){0,1}$/;
+// public static readonly fieldParser = /^([^:^"]+:){0,1}"{0,1}([^"\(]+)"{0,1}\({0,1}([^\)]+){0,1}\){0,1}$/;
+PSQField.fieldParser = /^([^:^"\n]+:){0,1}"{0,1}([^"\(\n]+)"{0,1}\({0,1}(.+?){0,1}\){0,1}$/;
 exports.PSQField = PSQField;
