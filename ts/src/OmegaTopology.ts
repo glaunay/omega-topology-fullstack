@@ -170,6 +170,13 @@ export default class OmegaTopology {
             // console.log(this.G);
             let global_set = new Set<string>();
             for (const seed of seed_set) {
+                if (max_distance === Infinity && global_set.has(seed)) {
+                    // Si la seed est déjà dans les voisins trouvés et 
+                    // que distance infinie: 
+                    // pas besoin de chercher les voisins de celui là !
+                    continue;
+                }
+
                 for (const el of getAvailableNeighboors(seed, max_distance)) {
                     global_set.add(el);
                 }
@@ -397,8 +404,6 @@ export default class OmegaTopology {
 
     /**
      * Make a new graph using currently visible nodes/edges.
-     * 
-     * @returns {Graph}
      */
     protected makeGraph(build_edges_number = false) {
         const g = new Graph({ directed: false });

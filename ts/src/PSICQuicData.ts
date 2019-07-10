@@ -200,7 +200,7 @@ export class PSQDatum {
 
 export class PSQField {
     // public static readonly fieldParser = /^([^:^"]+:){0,1}"{0,1}([^"\(]+)"{0,1}\({0,1}([^\)]+){0,1}\){0,1}$/;
-    public static readonly fieldParser = /^([^:^"\n]+:){0,1}"{0,1}([^"\(\n]+)"{0,1}\({0,1}(.+?){0,1}\){0,1}$/;
+    public static readonly fieldParser = /^([^:^"\n]+:)?"?([^"\(\n]+)"?\(?(.+?)?\)?$/;
 
     // protected raw: string;
     public value: string;

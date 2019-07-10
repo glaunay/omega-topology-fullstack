@@ -155,8 +155,6 @@ export default class OmegaTopology {
     fromDownload(url: string): Promise<void>;
     /**
      * Make a new graph using currently visible nodes/edges.
-     *
-     * @returns {Graph}
      */
     protected makeGraph(build_edges_number?: boolean): Graph;
     downloadGoTerms(...protein_ids: string[]): Promise<void>;
