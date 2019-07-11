@@ -51,6 +51,24 @@ class PSQData {
     get species() {
         return [this.data[9].data[0].value, this.data[10].data[0].value];
     }
+    get full_species() {
+        let max_len = 0;
+        let max_element = "";
+        for (const d of this.data[9].data) {
+            if (d.annotation && d.annotation.length > max_len) {
+                max_element = d.annotation;
+                max_len = d.annotation.length;
+            }
+        }
+        let max_element2 = "";
+        for (const d of this.data[9].data) {
+            if (d.annotation && d.annotation.length > max_len) {
+                max_element2 = d.annotation;
+                max_len = d.annotation.length;
+            }
+        }
+        return [!max_element ? this.data[9].data[0].value : max_element, !max_element2 ? this.data[10].data[0].value : max_element2];
+    }
     uniprotCapture(str) {
         const subString = str ? str.match(/[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}/) : undefined;
         if (subString)
@@ -58,8 +76,8 @@ class PSQData {
         return undefined;
     }
     get uniprotPair() {
-        const a = this.uniprotCapture(this.data[0].data[0].value) ? this.uniprotCapture(this.data[0].data[0].value) : this.uniprotCapture(this.data[2].data[0].value);
-        const b = this.uniprotCapture(this.data[1].data[0].value) ? this.uniprotCapture(this.data[1].data[0].value) : this.uniprotCapture(this.data[3].data[0].value);
+        const a = this.uniprotCapture(this.data[0].data[0].value) || this.uniprotCapture(this.data[2].data[0].value);
+        const b = this.uniprotCapture(this.data[1].data[0].value) || this.uniprotCapture(this.data[3].data[0].value);
         if (a && b) {
             return b < a ? [b, a] : [a, b];
         }

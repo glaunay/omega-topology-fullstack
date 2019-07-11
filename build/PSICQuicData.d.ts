@@ -13,6 +13,7 @@ export declare class PSQData {
     readonly source: string;
     readonly interactionDetectionMethod: string;
     readonly species: string[];
+    readonly full_species: string[];
     protected uniprotCapture(str: string): string;
     readonly uniprotPair: [string, string] | undefined;
     readonly json: string;
