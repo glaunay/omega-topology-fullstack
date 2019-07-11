@@ -93,7 +93,13 @@ export interface UniprotProtein {
         };
         scope: string[];
     }[];
-    sequence: [number, number, number, string, string];
+    sequence: [number, number, number, string, string] | {
+        length: number;
+        mass: number;
+        modified: string;
+        sequence: string;
+        version: number;
+    };
 }
 interface UniprotValueObject {
     value: string;
