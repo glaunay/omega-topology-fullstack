@@ -100,7 +100,7 @@ export interface UniprotProtein {
         lineage: string[];
     };
     protein: {
-        recommandedName: UniprotProteinNameObject;
+        recommendedName: UniprotProteinNameObject;
         alternativeName: UniprotProteinNameObject[];
         submittedName: UniprotProteinNameObject[];
     };
