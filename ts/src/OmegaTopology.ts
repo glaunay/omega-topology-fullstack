@@ -39,7 +39,7 @@ export default class OmegaTopology {
     protected init_promise = Promise.resolve();
 
     /** True if mitab is loaded */
-    protected mitab_loaded = false;
+    public mitab_loaded = false;
 
     protected go_terms = new GoTermsContainer;
     protected _uniprot_container: UniprotContainer;

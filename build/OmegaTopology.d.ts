@@ -31,7 +31,7 @@ export default class OmegaTopology {
     protected baseTopology: PSICQuic;
     protected init_promise: Promise<void>;
     /** True if mitab is loaded */
-    protected mitab_loaded: boolean;
+    mitab_loaded: boolean;
     protected go_terms: GoTermsContainer;
     protected _uniprot_container: UniprotContainer;
     /**
