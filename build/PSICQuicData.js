@@ -60,8 +60,9 @@ class PSQData {
                 max_len = d.annotation.length;
             }
         }
+        max_len = 0;
         let max_element2 = "";
-        for (const d of this.data[9].data) {
+        for (const d of this.data[10].data) {
             if (d.annotation && d.annotation.length > max_len) {
                 max_element2 = d.annotation;
                 max_len = d.annotation.length;
