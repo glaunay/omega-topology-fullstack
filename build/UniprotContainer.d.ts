@@ -39,13 +39,13 @@ export interface UniprotProtein {
         lineage: string[];
     };
     protein: {
-        recommendedName: UniprotProteinNameObject;
-        alternativeName: UniprotProteinNameObject[];
-        submittedName: UniprotProteinNameObject[];
+        recommendedName?: UniprotProteinNameObject;
+        alternativeName?: UniprotProteinNameObject[];
+        submittedName?: UniprotProteinNameObject[];
     };
     gene: {
         name: UniprotValueEvidenceObject;
-        oldNames: UniprotValueEvidenceObject[];
+        olnNames: UniprotValueEvidenceObject[];
     }[];
     comments: {
         type: string;
