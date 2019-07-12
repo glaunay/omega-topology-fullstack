@@ -409,7 +409,10 @@ export default class OmegaTopology {
         const g = new Graph({ directed: false });
 
         for (const [n1, n2, edgeData] of this.iterVisible()) {
-            g.setNode(n1, { group: 0, val: 0 }).setNode(n2, { group: 0, val: 0 }).setEdge(n1, n2, edgeData);
+            // Test if edge exists already
+            if (!g.edge(n1, n2)) {
+                g.setNode(n1, { group: 0, val: 0 }).setNode(n2, { group: 0, val: 0 }).setEdge(n1, n2, edgeData);
+            }
         }
 
         if (build_edges_number)
