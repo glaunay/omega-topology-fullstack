@@ -586,12 +586,13 @@ class OmegaTopology {
      * @param taxons Valid taxons required. Must be an array of **string**. Empty array if any taxon is allowed.
      * @returns [number of deleted edges, total edges count]
      */
-    trimEdges({ simPct = 0, idPct = 0, cvPct = 0, eValue = 1, exp_det_methods = [], taxons = [], definitive = false } = {}) {
+    trimEdges({ simPct = 0, idPct = 0, cvPct = 0, eValue = 1, exp_det_methods = [], taxons = [], definitive = false, logged_id = "" } = {}) {
         let nDel = 0;
         let nTot = 0;
+        const logged = [];
         for (const [x, y, HoParameterSetObj] of this) {
             nTot++;
-            HoParameterSetObj.trim({
+            const reasons = HoParameterSetObj.trim({
                 simPct,
                 idPct,
                 cvPct,
@@ -602,12 +603,17 @@ class OmegaTopology {
             });
             if (HoParameterSetObj.isEmpty) {
                 nDel++;
+                if ([x, y].includes(logged_id)) {
+                    const reasons_logged = logged_id === x ? reasons.map(e => e[0]) : reasons.map(e => e[1]);
+                    const reasons_not_logged = logged_id === x ? reasons.map(e => e[1]) : reasons.map(e => e[0]);
+                    logged.push({ x, y, logged: reasons_logged, partner: reasons_not_logged });
+                }
                 if (definitive) {
                     this.ajdTree.remove(x, y);
                 }
             }
         }
-        return [nDel, nTot];
+        return [nDel, nTot, logged];
     }
     toString() {
         return JSON.stringify(Array.from(this.iterVisible()));

@@ -64,11 +64,53 @@ class HoParameterSet {
      */
     trim({ simPct = 0, idPct = 0, cvPct = 0, eValue = 1, exp_methods = undefined, taxons = undefined, definitive = false } = {}) {
         this.visible = true;
+        const reasons = [];
         const to_remove = [];
         for (const [index, parameters] of python_enumerate_1.default(this)) {
             const [loHparam, hiHparam] = parameters;
-            loHparam.valid = loHparam.simPct >= simPct && loHparam.idPct >= idPct && loHparam.cvPct >= cvPct && loHparam.eValue <= eValue;
-            hiHparam.valid = hiHparam.simPct >= simPct && hiHparam.idPct >= idPct && hiHparam.cvPct >= cvPct && hiHparam.eValue <= eValue;
+            const reason = {
+                identity: false,
+                e_value: false,
+                similarity: false,
+                coverage: false
+            };
+            const highReason = Object.assign({}, reason);
+            loHparam.valid = true;
+            if (loHparam.simPct < simPct) {
+                reason.similarity = true;
+                loHparam.valid = false;
+            }
+            if (loHparam.idPct < idPct) {
+                reason.identity = true;
+                loHparam.valid = false;
+            }
+            if (loHparam.cvPct < cvPct) {
+                reason.coverage = true;
+                loHparam.valid = false;
+            }
+            if (loHparam.eValue > eValue) {
+                reason.e_value = true;
+                loHparam.valid = false;
+            }
+            hiHparam.valid = true;
+            if (hiHparam.simPct < simPct) {
+                highReason.similarity = true;
+                hiHparam.valid = false;
+            }
+            if (hiHparam.idPct < idPct) {
+                highReason.identity = true;
+                hiHparam.valid = false;
+            }
+            if (hiHparam.cvPct < cvPct) {
+                highReason.coverage = true;
+                hiHparam.valid = false;
+            }
+            if (hiHparam.eValue > eValue) {
+                highReason.e_value = true;
+                hiHparam.valid = false;
+            }
+            // loHparam.valid = loHparam.simPct >= simPct && loHparam.idPct >= idPct && loHparam.cvPct >= cvPct && loHparam.eValue <= eValue;
+            // hiHparam.valid = hiHparam.simPct >= simPct && hiHparam.idPct >= idPct && hiHparam.cvPct >= cvPct && hiHparam.eValue <= eValue;
             // Remise à 0 des lignes mitab
             if (!exp_methods && this.mitabCouples[index])
                 for (const m of this.mitabCouples[index]) {
@@ -100,12 +142,14 @@ class HoParameterSet {
                 }
                 to_remove.push(index);
             }
+            reasons.push([reason, highReason]);
         }
         if (definitive) {
             this.lowQueryParam = this.lowQueryParam.filter((_, index) => !to_remove.includes(index));
             this.highQueryParam = this.highQueryParam.filter((_, index) => !to_remove.includes(index));
             this.mitabCouples = this.mitabCouples.filter((_, index) => !to_remove.includes(index));
         }
+        return reasons;
     }
     static from(obj) {
         const param = new HoParameterSet;
