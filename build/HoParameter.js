@@ -89,7 +89,7 @@ class HoParameterSet {
                 loHparam.valid = false;
             }
             if (loHparam.eValue > eValue) {
-                reason.e_value = `${loHparam.eValue}, expected higher than ${eValue}`;
+                reason.e_value = `${loHparam.eValue}, expected lower than ${eValue}`;
                 loHparam.valid = false;
             }
             hiHparam.valid = true;
@@ -106,7 +106,7 @@ class HoParameterSet {
                 hiHparam.valid = false;
             }
             if (hiHparam.eValue > eValue) {
-                highReason.e_value = `${hiHparam.eValue}, expected higher than ${eValue}`;
+                highReason.e_value = `${hiHparam.eValue}, expected lower than ${eValue}`;
                 hiHparam.valid = false;
             }
             // loHparam.valid = loHparam.simPct >= simPct && loHparam.idPct >= idPct && loHparam.cvPct >= cvPct && loHparam.eValue <= eValue;

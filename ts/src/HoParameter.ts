@@ -120,7 +120,7 @@ export class HoParameterSet {
                 loHparam.valid = false;
             }
             if (loHparam.eValue > eValue) {
-                reason.e_value = `${loHparam.eValue}, expected higher than ${eValue}`;
+                reason.e_value = `${loHparam.eValue}, expected lower than ${eValue}`;
                 loHparam.valid = false;
             }
 
@@ -139,7 +139,7 @@ export class HoParameterSet {
                 hiHparam.valid = false;
             }
             if (hiHparam.eValue > eValue) {
-                highReason.e_value = `${hiHparam.eValue}, expected higher than ${eValue}`;
+                highReason.e_value = `${hiHparam.eValue}, expected lower than ${eValue}`;
                 hiHparam.valid = false;
             }
 
