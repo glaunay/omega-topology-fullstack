@@ -87,64 +87,70 @@ export class HoParameterSet {
         eValue = 1, 
         exp_methods = undefined,
         taxons = undefined,
-        definitive = false
+        definitive = false,
+        logged = false
     } = {}) : [TrimFailReason, TrimFailReason][] {
         this.visible = true;
         const reasons = [];
-        
         const to_remove = [];
 
         for (const [index, parameters] of enumerate(this)) {
             const [loHparam, hiHparam] = parameters;
 
-            const reason: TrimFailReason = {
-                identity: false,
-                e_value: false,
-                similarity: false,
-                coverage: false
-            };
-            const highReason = Object.assign({}, reason);
+            if (logged) {
+                const reason: TrimFailReason = {
+                    identity: false,
+                    e_value: false,
+                    similarity: false,
+                    coverage: false
+                };
+                const highReason = Object.assign({}, reason);
+    
+                loHparam.valid = true;
+    
+                if (loHparam.simPct < simPct) {
+                    reason.similarity = `${loHparam.simPct}, expected higher than ${simPct}`;
+                    loHparam.valid = false;
+                }
+                if (loHparam.idPct < idPct) {
+                    reason.identity = `${loHparam.idPct}, expected higher than ${idPct}`;
+                    loHparam.valid = false;
+                }
+                if (loHparam.cvPct < cvPct) {
+                    reason.coverage = `${loHparam.cvPct}, expected higher than ${cvPct}`;
+                    loHparam.valid = false;
+                }
+                if (loHparam.eValue > eValue) {
+                    reason.e_value = `${loHparam.eValue}, expected lower than ${eValue}`;
+                    loHparam.valid = false;
+                }
+    
+                hiHparam.valid = true;
+    
+                if (hiHparam.simPct < simPct) {
+                    highReason.similarity = `${hiHparam.simPct}, expected higher than ${simPct}`;
+                    hiHparam.valid = false;
+                }
+                if (hiHparam.idPct < idPct) {
+                    highReason.identity = `${hiHparam.idPct}, expected higher than ${idPct}`;
+                    hiHparam.valid = false;
+                }
+                if (hiHparam.cvPct < cvPct) {
+                    highReason.coverage = `${hiHparam.cvPct}, expected higher than ${cvPct}`;
+                    hiHparam.valid = false;
+                }
+                if (hiHparam.eValue > eValue) {
+                    highReason.e_value = `${hiHparam.eValue}, expected lower than ${eValue}`;
+                    hiHparam.valid = false;
+                }
 
-            loHparam.valid = true;
-
-            if (loHparam.simPct < simPct) {
-                reason.similarity = `${loHparam.simPct}, expected higher than ${simPct}`;
-                loHparam.valid = false;
+                reasons.push([reason, highReason]);
             }
-            if (loHparam.idPct < idPct) {
-                reason.identity = `${loHparam.idPct}, expected higher than ${idPct}`;
-                loHparam.valid = false;
-            }
-            if (loHparam.cvPct < cvPct) {
-                reason.coverage = `${loHparam.cvPct}, expected higher than ${cvPct}`;
-                loHparam.valid = false;
-            }
-            if (loHparam.eValue > eValue) {
-                reason.e_value = `${loHparam.eValue}, expected lower than ${eValue}`;
-                loHparam.valid = false;
+            else {
+                loHparam.valid = loHparam.simPct >= simPct && loHparam.idPct >= idPct && loHparam.cvPct >= cvPct && loHparam.eValue <= eValue;
+                hiHparam.valid = hiHparam.simPct >= simPct && hiHparam.idPct >= idPct && hiHparam.cvPct >= cvPct && hiHparam.eValue <= eValue;
             }
 
-            hiHparam.valid = true;
-
-            if (hiHparam.simPct < simPct) {
-                highReason.similarity = `${hiHparam.simPct}, expected higher than ${simPct}`;
-                hiHparam.valid = false;
-            }
-            if (hiHparam.idPct < idPct) {
-                highReason.identity = `${hiHparam.idPct}, expected higher than ${idPct}`;
-                hiHparam.valid = false;
-            }
-            if (hiHparam.cvPct < cvPct) {
-                highReason.coverage = `${hiHparam.cvPct}, expected higher than ${cvPct}`;
-                hiHparam.valid = false;
-            }
-            if (hiHparam.eValue > eValue) {
-                highReason.e_value = `${hiHparam.eValue}, expected lower than ${eValue}`;
-                hiHparam.valid = false;
-            }
-
-            // loHparam.valid = loHparam.simPct >= simPct && loHparam.idPct >= idPct && loHparam.cvPct >= cvPct && loHparam.eValue <= eValue;
-            // hiHparam.valid = hiHparam.simPct >= simPct && hiHparam.idPct >= idPct && hiHparam.cvPct >= cvPct && hiHparam.eValue <= eValue;
 
             // Remise à 0 des lignes mitab
             if (!exp_methods && this.mitabCouples[index])
@@ -186,8 +192,6 @@ export class HoParameterSet {
                 }
                 to_remove.push(index);
             }
-
-            reasons.push([reason, highReason]);
         }
 
         if (definitive) {

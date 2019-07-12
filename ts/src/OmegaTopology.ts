@@ -741,6 +741,7 @@ export default class OmegaTopology {
         let nTot = 0;
 
         const logged = [];
+        const is_logged = logged_id.length > 0;
 
         for (const [x, y, HoParameterSetObj] of this) {
             nTot++;
@@ -751,7 +752,8 @@ export default class OmegaTopology {
                 eValue,
                 exp_methods: exp_det_methods.length ? new Set(exp_det_methods) : undefined,
                 taxons: taxons.length ? new Set(taxons) : undefined,
-                definitive
+                definitive,
+                logged: is_logged
             });
 
             if (HoParameterSetObj.isEmpty) {
