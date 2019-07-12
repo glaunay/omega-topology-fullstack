@@ -267,7 +267,7 @@ export default class OmegaTopology {
      * @param taxons Valid taxons required. Must be an array of **string**. Empty array if any taxon is allowed.
      * @returns [number of deleted edges, total edges count]
      */
-    trimEdges({ simPct, idPct, cvPct, eValue, exp_det_methods, taxons, definitive }?: {
+    trimEdges({ simPct, idPct, cvPct, eValue, exp_det_methods, taxons, definitive, logged_id }?: {
         simPct?: number;
         idPct?: number;
         cvPct?: number;
@@ -275,7 +275,8 @@ export default class OmegaTopology {
         exp_det_methods?: any[];
         taxons?: any[];
         definitive?: boolean;
-    }): [number, number];
+        logged_id?: string;
+    }): [number, number, any];
     toString(): string;
     /**
      * Add a couple of HomologChildren to internal tree.

@@ -1,5 +1,11 @@
 import { PSQData } from "./main";
 export declare type HVector = string[];
+interface TrimFailReason {
+    identity: boolean;
+    similarity: boolean;
+    e_value: boolean;
+    coverage: boolean;
+}
 export declare class HoParameterSet {
     lowQueryParam: HoParameter[];
     highQueryParam: HoParameter[];
@@ -26,7 +32,7 @@ export declare class HoParameterSet {
         exp_methods?: any;
         taxons?: any;
         definitive?: boolean;
-    }): void;
+    }): [TrimFailReason, TrimFailReason][];
     static from(obj: {
         lowQueryParam: {
             data: string[];
@@ -57,3 +63,4 @@ export declare class HoParameter {
     readonly cvPct: number;
     readonly eValue: number;
 }
+export {};
