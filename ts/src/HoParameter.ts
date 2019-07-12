@@ -8,10 +8,10 @@ const TAXON_EVERY = 0;
 const TAXON_SOME = 1;
 
 interface TrimFailReason {
-    identity: boolean,
-    similarity: boolean,
-    e_value: boolean,
-    coverage: boolean
+    identity: boolean | string,
+    similarity: boolean | string,
+    e_value: boolean | string,
+    coverage: boolean | string
 }
 
 export class HoParameterSet {
@@ -108,38 +108,38 @@ export class HoParameterSet {
             loHparam.valid = true;
 
             if (loHparam.simPct < simPct) {
-                reason.similarity = true;
+                reason.similarity = `${loHparam.simPct}, expected higher than ${simPct}`;
                 loHparam.valid = false;
             }
             if (loHparam.idPct < idPct) {
-                reason.identity = true;
+                reason.identity = `${loHparam.idPct}, expected higher than ${idPct}`;
                 loHparam.valid = false;
             }
             if (loHparam.cvPct < cvPct) {
-                reason.coverage = true;
+                reason.coverage = `${loHparam.cvPct}, expected higher than ${cvPct}`;
                 loHparam.valid = false;
             }
             if (loHparam.eValue > eValue) {
-                reason.e_value = true;
+                reason.e_value = `${loHparam.eValue}, expected higher than ${eValue}`;
                 loHparam.valid = false;
             }
 
             hiHparam.valid = true;
 
             if (hiHparam.simPct < simPct) {
-                highReason.similarity = true;
+                highReason.similarity = `${hiHparam.simPct}, expected higher than ${simPct}`;
                 hiHparam.valid = false;
             }
             if (hiHparam.idPct < idPct) {
-                highReason.identity = true;
+                highReason.identity = `${hiHparam.idPct}, expected higher than ${idPct}`;
                 hiHparam.valid = false;
             }
             if (hiHparam.cvPct < cvPct) {
-                highReason.coverage = true;
+                highReason.coverage = `${hiHparam.cvPct}, expected higher than ${cvPct}`;
                 hiHparam.valid = false;
             }
             if (hiHparam.eValue > eValue) {
-                highReason.e_value = true;
+                highReason.e_value = `${hiHparam.eValue}, expected higher than ${eValue}`;
                 hiHparam.valid = false;
             }
 

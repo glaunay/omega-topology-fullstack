@@ -603,7 +603,7 @@ class OmegaTopology {
             });
             if (HoParameterSetObj.isEmpty) {
                 nDel++;
-                if ([x, y].includes(logged_id)) {
+                if (logged_id && [x, y].includes(logged_id)) {
                     const reasons_logged = logged_id === x ? reasons.map(e => e[0]) : reasons.map(e => e[1]);
                     const reasons_not_logged = logged_id === x ? reasons.map(e => e[1]) : reasons.map(e => e[0]);
                     logged.push({ x, y, logged: reasons_logged, partner: reasons_not_logged });

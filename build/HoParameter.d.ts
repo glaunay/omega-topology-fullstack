@@ -1,10 +1,10 @@
 import { PSQData } from "./main";
 export declare type HVector = string[];
 interface TrimFailReason {
-    identity: boolean;
-    similarity: boolean;
-    e_value: boolean;
-    coverage: boolean;
+    identity: boolean | string;
+    similarity: boolean | string;
+    e_value: boolean | string;
+    coverage: boolean | string;
 }
 export declare class HoParameterSet {
     lowQueryParam: HoParameter[];
