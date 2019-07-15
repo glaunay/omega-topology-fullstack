@@ -200,6 +200,7 @@ export class HoParameterSet {
                 const hash = loHparam.data.join('') + '~' + hiHparam.data.join('');
                 
                 if (hash in hashes) {
+                    console.log("Duplicata removed");
                     to_remove.includes(index);
                 }
                 else {
