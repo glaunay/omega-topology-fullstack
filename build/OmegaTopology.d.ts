@@ -267,7 +267,7 @@ export default class OmegaTopology {
      * @param taxons Valid taxons required. Must be an array of **string**. Empty array if any taxon is allowed.
      * @returns [number of deleted edges, total edges count]
      */
-    trimEdges({ simPct, idPct, cvPct, eValue, exp_det_methods, taxons, definitive, logged_id }?: {
+    trimEdges({ simPct, idPct, cvPct, eValue, exp_det_methods, taxons, definitive, logged_id, destroy_identical }?: {
         simPct?: number;
         idPct?: number;
         cvPct?: number;
@@ -276,6 +276,7 @@ export default class OmegaTopology {
         taxons?: any[];
         definitive?: boolean;
         logged_id?: string;
+        destroy_identical?: boolean;
     }): [number, number, any];
     toString(): string;
     /**

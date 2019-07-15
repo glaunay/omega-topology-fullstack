@@ -322,7 +322,10 @@ class OmegaTopology {
     makeGraph(build_edges_number = false) {
         const g = new graphlib_1.Graph({ directed: false });
         for (const [n1, n2, edgeData] of this.iterVisible()) {
-            g.setNode(n1, { group: 0, val: 0 }).setNode(n2, { group: 0, val: 0 }).setEdge(n1, n2, edgeData);
+            // Test if edge exists already
+            if (!g.edge(n1, n2)) {
+                g.setNode(n1, { group: 0, val: 0 }).setNode(n2, { group: 0, val: 0 }).setEdge(n1, n2, edgeData);
+            }
         }
         if (build_edges_number)
             for (const node of g.nodes()) {
@@ -586,10 +589,11 @@ class OmegaTopology {
      * @param taxons Valid taxons required. Must be an array of **string**. Empty array if any taxon is allowed.
      * @returns [number of deleted edges, total edges count]
      */
-    trimEdges({ simPct = 0, idPct = 0, cvPct = 0, eValue = 1, exp_det_methods = [], taxons = [], definitive = false, logged_id = "" } = {}) {
+    trimEdges({ simPct = 0, idPct = 0, cvPct = 0, eValue = 1, exp_det_methods = [], taxons = [], definitive = false, logged_id = "", destroy_identical = false } = {}) {
         let nDel = 0;
         let nTot = 0;
         const logged = [];
+        const is_logged = logged_id.length > 0;
         for (const [x, y, HoParameterSetObj] of this) {
             nTot++;
             const reasons = HoParameterSetObj.trim({
@@ -599,7 +603,9 @@ class OmegaTopology {
                 eValue,
                 exp_methods: exp_det_methods.length ? new Set(exp_det_methods) : undefined,
                 taxons: taxons.length ? new Set(taxons) : undefined,
-                definitive
+                definitive,
+                logged: is_logged,
+                destroy_identical
             });
             if (HoParameterSetObj.isEmpty) {
                 nDel++;

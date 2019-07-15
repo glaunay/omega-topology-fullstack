@@ -24,7 +24,7 @@ export declare class HoParameterSet {
      *
      * @param Object Variables **exp_methods** and **taxons** are undefined OR Set of strings.
      */
-    trim({ simPct, idPct, cvPct, eValue, exp_methods, taxons, definitive }?: {
+    trim({ simPct, idPct, cvPct, eValue, exp_methods, taxons, definitive, logged, destroy_identical }?: {
         simPct?: number;
         idPct?: number;
         cvPct?: number;
@@ -32,6 +32,8 @@ export declare class HoParameterSet {
         exp_methods?: any;
         taxons?: any;
         definitive?: boolean;
+        logged?: boolean;
+        destroy_identical?: boolean;
     }): [TrimFailReason, TrimFailReason][];
     static from(obj: {
         lowQueryParam: {

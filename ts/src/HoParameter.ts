@@ -88,11 +88,13 @@ export class HoParameterSet {
         exp_methods = undefined,
         taxons = undefined,
         definitive = false,
-        logged = false
+        logged = false,
+        destroy_identical = false
     } = {}) : [TrimFailReason, TrimFailReason][] {
         this.visible = true;
         const reasons = [];
         const to_remove = [];
+        const hashes = {};
 
         for (const [index, parameters] of enumerate(this)) {
             const [loHparam, hiHparam] = parameters;
@@ -191,6 +193,18 @@ export class HoParameterSet {
                     this.mitabCouples[index].forEach(m => m.valid = false);
                 }
                 to_remove.push(index);
+            }
+
+            if (destroy_identical) {
+                // Mini-hash
+                const hash = loHparam.data.join('') + '~' + hiHparam.data.join('');
+                
+                if (hash in hashes) {
+                    to_remove.includes(index);
+                }
+                else {
+                    hashes[hash] = true;
+                }
             }
         }
 

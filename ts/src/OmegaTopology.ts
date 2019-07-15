@@ -735,7 +735,8 @@ export default class OmegaTopology {
         exp_det_methods = [],
         taxons = [],
         definitive = false,
-        logged_id = ""
+        logged_id = "",
+        destroy_identical = false
     } = {}) : [number, number, any] {
         let nDel = 0;
         let nTot = 0;
@@ -753,7 +754,8 @@ export default class OmegaTopology {
                 exp_methods: exp_det_methods.length ? new Set(exp_det_methods) : undefined,
                 taxons: taxons.length ? new Set(taxons) : undefined,
                 definitive,
-                logged: is_logged
+                logged: is_logged,
+                destroy_identical
             });
 
             if (HoParameterSetObj.isEmpty) {
