@@ -201,7 +201,6 @@ export default class OmegaTopology {
         t = Date.now();
 
         // Exploring degree for all nodes
-        // TODO TOCHECK
         for (const node of this.G.nodes()) {
             const node_value = this.G.node(node) as NodeGraphComponent;
             const edges = this.G.nodeEdges(node);
@@ -656,9 +655,8 @@ export default class OmegaTopology {
      * @param {*} bar
      */
     async buildEdgesReverse(url: string, bar?: any /** Progress bar (any for not importing Progress in clients) */) {
-        const inters = new PartnersMap({ // TODO TOCHANGE
-            database_url: url,
-            /** filename: "/Users/lberanger/dataOmega/interactors.json" */
+        const inters = new PartnersMap({ 
+            database_url: url
         });
 
         // let time = 0;

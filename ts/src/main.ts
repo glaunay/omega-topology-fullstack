@@ -1,4 +1,4 @@
-import OmegaTopology from './OmegaTopology';
+import OmegaTopology, { ArtefactalEdgeData } from './OmegaTopology';
 import HomologyTree, { HomologChildren, HomologInfo } from './HomologyTree';
 import { HoParameterSet, HoParameter, HVector } from './HoParameter';
 import PSICQuic, { PSQDataHolder } from './PSICQuic';
@@ -12,6 +12,7 @@ export * from './UniprotContainer';
 export default OmegaTopology;
 
 export { 
+    ArtefactalEdgeData,
     PSICQuic, PSQDataHolder,
     PSQField, PSQData, PSQDatum, 
     HoParameterSet, HoParameter, HVector, 
