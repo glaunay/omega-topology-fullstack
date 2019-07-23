@@ -7,12 +7,13 @@ import PartnersMap from './PartnersMap';
 import MitabTopology from './MitabTopology';
 import { MDNode, MDTree, DNTree } from './MDTree';
 import GoTermsContainer, { GOTerm, GOTerms } from './GoTermsContainer';
+export * from './UniprotContainer';
 
 export default OmegaTopology;
 
 export { 
     PSICQuic, PSQDataHolder,
-    PSQField, PSQData, PSQDatum,
+    PSQField, PSQData, PSQDatum, 
     HoParameterSet, HoParameter, HVector, 
     HomologyTree, HomologChildren, HomologInfo,
     PartnersMap,

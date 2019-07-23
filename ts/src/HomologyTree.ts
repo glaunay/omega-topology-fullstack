@@ -1,6 +1,8 @@
+import { ArtefactalEdgeData } from "./OmegaTopology";
+
 export interface HomologInfo {
-    [psqId: string]: {
-        [homologKey: string]: string[][];
+    [homologId: string]: {
+        [r6ProtId: string]: string[][];
     }
 }
 
@@ -44,6 +46,31 @@ export default class HomologTree {
      */
     init() {
         return this.init_promise;
+    }
+
+    addArtefactal(edge: ArtefactalEdgeData) : [HomologChildren, HomologChildren] {
+        return [
+            this.addPartialArtefactual(edge),
+            this.addPartialArtefactual(edge, 'target')
+        ];
+    }
+
+    addPartialArtefactual(edge: ArtefactalEdgeData, source = "source") {
+        const edge1 = edge[source], edge2 = edge[source === 'source' ? 'target' : 'source'];
+        if (!(edge1 in this.data)) {
+            this.data[edge1] = {};
+        }
+
+        const l = String(edge.length);
+        const l_P_1 = String(Number(l) + 1);
+
+        if (!(edge2 in this.data[edge1])) {
+            this.data[edge1][edge2] = [[l, "1", l_P_1, l, "1", l_P_1, l, l, "1e-150"]];
+        }
+
+        return {
+            [edge2]: [edge1, ...this.data[edge1][edge2][0]]
+        };
     }
 
     getChildrenData(psqId: string) : HomologChildren {

@@ -9,7 +9,7 @@ import { setUnion } from './helpers';
 import zip from 'python-zip';
 import md5 from 'md5';
 import PSICQuic from "./PSICQuic";
-import { PSQData } from "./main";
+import { PSQData } from "./PSICQuicData";
 
 interface NodeGraphComponent {
     group: number;
@@ -21,6 +21,13 @@ interface SerializedOmegaTopology {
     tree: string;
     homolog?: string;
     version: number
+}
+
+export interface ArtefactalEdgeData {
+    source: string;
+    target: string;
+    length: number;
+    mitabData?: PSQData[];
 }
 
 export default class OmegaTopology {
@@ -781,15 +788,50 @@ export default class OmegaTopology {
         return JSON.stringify(Array.from(this.iterVisible()));
     }
 
+    addArtefactualEdge(edgeData: ArtefactalEdgeData) {
+        const node1 = edgeData.target;
+        const node2 = edgeData.source;
+
+        // Test if link already exists
+        if (this.ajdTree.get(node1, node2)) {
+            return;
+        }
+
+        // Create fake homology data
+        const [dataNewA, dataNewB] = this.hData.addArtefactal(edgeData);
+
+        const params = this.addEdgeSet(dataNewA, dataNewB);
+        this.constructGraph(true);
+        
+        if (edgeData.mitabData) {
+            for (const l of edgeData.mitabData) {
+                this.psi.update(l);
+            }
+            // Updating mitab lines
+            for (const p of params) {
+                const lines_for_this_parameter: PSQData[][] = [];
+    
+                for (const [ho_a, ho_b] of p) {
+                    const [id_a, id_b] = [ho_a.template, ho_b.template];
+    
+                    lines_for_this_parameter.push(this.psi.getLines(id_a, id_b));
+                }
+    
+                p.mitabCouples = lines_for_this_parameter.map(e => e.map(d => new MitabParameter(d)));
+            }
+        }
+    }
+
     /**
      * Add a couple of HomologChildren to internal tree.
      *
      * @param {HomologChildren} dataNewA
      * @param {HomologChildren} dataNewB
      */
-    addEdgeSet(dataNewA: HomologChildren, dataNewB: HomologChildren) : void {
+    addEdgeSet(dataNewA: HomologChildren, dataNewB: HomologChildren) : HoParameterSet[] {
         const newAelements = Object.keys(dataNewA).map(e => [md5(e), e, dataNewA[e]]) as [string, string, string[]][];
         const newBelements = Object.keys(dataNewB).map(e => [md5(e), e, dataNewB[e]]) as [string, string, string[]][];
+        const added = [];
 
         for (const [hA, idA, dA] of newAelements) {
             for (const [hB, idB, dB] of newBelements) {
@@ -805,7 +847,10 @@ export default class OmegaTopology {
 
                 const HoParameterSetObj: HoParameterSet = this.ajdTree.getOrSet(idA, idB, new HoParameterSet);
                 HoParameterSetObj.add(dX, dY);
+                added.push(HoParameterSetObj);
             }
         }
+
+        return added;
     }
 }

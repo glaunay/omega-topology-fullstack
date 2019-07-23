@@ -1,4 +1,4 @@
-export default class UniprotContainer {
+export class UniprotContainer {
     protected tiny = new Map<string, TinyProtein>();
     protected full = new Map<string, UniprotProtein>();
 
@@ -72,6 +72,8 @@ export default class UniprotContainer {
         this.full.clear();
     }
 }
+
+export default UniprotContainer;
 
 export interface TinyProtein {
     accession: string;
