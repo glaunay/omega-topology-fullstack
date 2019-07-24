@@ -1,12 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-////// Cette instance est destinée à tourner chez un client. L'utilité pour le service est moindre (reconstruction).
 /**
- * @deprecated *USE ONLY MitabTopology*
+ * @deprecated Unused.
+ * No utility, PSICQuic object is ok.
  *
- * @export
- * @class LocalMitab
- * @extends {MitabTopology}
+ * To follow MI Tab download, FrontTopology has been implemented into the client side of the project.
  */
 class MitabTopology {
     constructor(psiq, url, couple_url) {

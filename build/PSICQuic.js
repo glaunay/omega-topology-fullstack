@@ -11,14 +11,10 @@ class PSICQuic {
      * Creates an instance of PSICQuic.
      * @param {string} [mode="LOOSE"] >deprecated Unused.
      * @param {boolean} [keep_raw=false] Keep the raw line when creating PSQData children.
-     * @param {boolean} [offline=true] >deprecated Always be true. Unused
      */
-    constructor(mode = "LOOSE", keep_raw = false, offline = true) {
+    constructor(mode = "LOOSE", keep_raw = false) {
         this.mode = mode;
         this.keep_raw = keep_raw;
-        // public static mitabLvls = ["25", "27"];
-        // public static web = new OLS;
-        // public registry = new Registry;
         /**
          * Records of Mitab currently loaded.
          */
@@ -28,19 +24,6 @@ class PSICQuic {
          */
         this.registredPublications = {};
         this.init_promise = Promise.resolve();
-        /* if (!offline) { registryUrl = "http://www.ebi.ac.uk/Tools/webservices/psicquic/registry/registry?action=STATUS&format=xml"
-            this.init_promise = this.getRegistry(registryUrl)
-                .then(r => {
-                    this.registry = r;
-
-                    if (!this.registry) {
-                        this.registry = new Registry;
-                    }
-                })
-                .catch(() => {
-                    this.registry = new Registry;
-                });
-        } */
     }
     /**
      * Promise symbolizing the instance state. Resolved when ready.

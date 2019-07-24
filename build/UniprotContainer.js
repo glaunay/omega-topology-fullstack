@@ -58,4 +58,5 @@ class UniprotContainer {
         this.full.clear();
     }
 }
+exports.UniprotContainer = UniprotContainer;
 exports.default = UniprotContainer;

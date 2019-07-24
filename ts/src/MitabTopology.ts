@@ -1,14 +1,11 @@
 import { PSQData } from "./PSICQuicData";
 import PSICQuic from "./PSICQuic";
 
-////// Cette instance est destinée à tourner chez un client. L'utilité pour le service est moindre (reconstruction).
-
 /**
- * @deprecated *USE ONLY MitabTopology*
- *
- * @export
- * @class LocalMitab
- * @extends {MitabTopology}
+ * @deprecated Unused.
+ * No utility, PSICQuic object is ok.
+ * 
+ * To follow MI Tab download, FrontTopology has been implemented into the client side of the project.
  */
 export default class MitabTopology {
     protected empty_nodes = new Set;

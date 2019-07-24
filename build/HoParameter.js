@@ -7,13 +7,21 @@ const python_zip_1 = __importDefault(require("python-zip"));
 const python_enumerate_1 = __importDefault(require("python-enumerate"));
 const TAXON_EVERY = 0;
 const TAXON_SOME = 1;
+/**
+ * Save the homology data of a link
+ */
 class HoParameterSet {
     constructor() {
+        /** Store the homology data of the node with the lowest MD5 hash */
         this.lowQueryParam = [];
+        /** Store the homology data of the node with the highest MD5 hash */
         this.highQueryParam = [];
+        /** Store the interaction data support of the link */
         this.mitabCouples = [];
+        /** If not visible, link will be hidden in the representation */
         this.visible = true;
     }
+    /** Serialize the object */
     toString() {
         const mitabCouples = [];
         return JSON.stringify({
@@ -27,6 +35,7 @@ class HoParameterSet {
             mitabCouples
         });
     }
+    /** Clear this instance */
     remove() {
         this.lowQueryParam = [];
         this.highQueryParam = [];
@@ -35,32 +44,53 @@ class HoParameterSet {
     get depth() {
         return this.length;
     }
+    /** Number of valid homologies */
     get length() {
         return this.lowQueryParam.filter(e => e.valid).length;
     }
+    /** True if any homology support is valid */
     get isEmpty() {
         return this.length === 0;
     }
+    /** Get all valid templates (Accession number of the homologs) */
     get templates() {
         return [
             this.lowQueryParam.filter(e => e.valid).map(e => e.template),
             this.highQueryParam.filter(e => e.valid).map(e => e.template)
         ];
     }
+    /** Templates, but unfiltered */
     get full_templates() {
         return [
             this.lowQueryParam.map(e => e.template),
             this.highQueryParam.map(e => e.template)
         ];
     }
+    /** Add a new homology support */
     add(x, y) {
         this.lowQueryParam.push(new HoParameter(x));
         this.highQueryParam.push(new HoParameter(y));
         this.mitabCouples.push([]);
     }
     /**
+     * Apply filters to the homology support or the interaction data.
+     * After a trim, check if the HoParameterSet is still valid with `.isEmpty`.
      *
-     * @param Object Variables **exp_methods** and **taxons** are undefined OR Set of strings.
+     * @param Object
+     * **simPct**, **idPct** and **cvPct**, respectively similiarity, identity and coverage, are in *percentage* (0 to 100).
+     * Setting a value for those settings will invalidate homology supports *below* the threshold.
+     *
+     * Setting a **eValue** will invalidate homology supports *above* the threshold.
+     *
+     * Variables **exp_methods** and **taxons** are undefined OR Set of strings. They must *NOT* be arrays of string !
+     *
+     * If you want reasons for what have been discarded by filters, you can enable the **logged** parameter with `true`.
+     * This function will return a array of tuples ([lowQuery, highQuery]) with fail information.
+     * Otherwise, return value will be an empty array.
+     *
+     * **destroy_identical** will identify identical identities parameter and filter them (at the end, there will be only one).
+     * This step is CPU-intensive, do not enable it everytime you filter !
+     * It is recommanded to activate both **destroy_identical** and **definitive** in order to permanently remove duplicated homology support.
      */
     trim({ simPct = 0, idPct = 0, cvPct = 0, eValue = 1, exp_methods = undefined, taxons = undefined, definitive = false, logged = false, destroy_identical = false } = {}) {
         this.visible = true;
@@ -166,6 +196,7 @@ class HoParameterSet {
         }
         return reasons;
     }
+    /** Unserialize a HoParameterSet */
     static from(obj) {
         const param = new HoParameterSet;
         param.lowQueryParam = obj.lowQueryParam.map(l => {
@@ -181,6 +212,7 @@ class HoParameterSet {
         param.visible = obj.visible;
         return param;
     }
+    /** Iterate through the homology support and the interaction data */
     *full_iterator(visible_only = false) {
         // @ts-ignore
         for (const values of python_zip_1.default(this.lowQueryParam, this.highQueryParam, this.mitabCouples)) {
@@ -194,14 +226,17 @@ class HoParameterSet {
             }
         }
     }
+    /** Iterate through the homology support */
     *[Symbol.iterator]() {
         for (const values of python_zip_1.default(this.lowQueryParam, this.highQueryParam)) {
             yield values;
         }
     }
 }
+/** How to search taxons in taxons search */
 HoParameterSet.DEFAULT_TAXON_SEARCH_MODE = TAXON_EVERY;
 exports.HoParameterSet = HoParameterSet;
+/** Encapsulate PSQData to store validity */
 class MitabParameter {
     constructor(d) {
         this.valid = true;
@@ -209,26 +244,33 @@ class MitabParameter {
     }
 }
 exports.MitabParameter = MitabParameter;
+/** Store one homology support */
 class HoParameter {
     constructor(hVector) {
         this.valid = true;
         this.data = hVector;
     }
+    /** Get the homolog sequence length */
     get length() {
         return parseInt(this.data[3]) - parseInt(this.data[2]) + 1;
     }
+    /** Get the identifier (accession number) of the homolog */
     get template() {
         return this.data[0];
     }
+    /** Get the similarity percentage */
     get simPct() {
         return 100 * Number(this.data[7]) / this.length;
     }
+    /** Get the identity percentage */
     get idPct() {
         return 100 * Number(this.data[8]) / this.length;
     }
+    /** Get the coverage percentage */
     get cvPct() {
         return 100 * this.length / parseInt(this.data[1]);
     }
+    /** Get the e-value */
     get eValue() {
         return Number(this.data[9]);
     }

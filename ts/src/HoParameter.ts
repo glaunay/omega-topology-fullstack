@@ -14,14 +14,23 @@ interface TrimFailReason {
     coverage: boolean | string
 }
 
+/**
+ * Save the homology data of a link
+ */
 export class HoParameterSet {
+    /** Store the homology data of the node with the lowest MD5 hash */
     public lowQueryParam: HoParameter[] = [];
+    /** Store the homology data of the node with the highest MD5 hash */
     public highQueryParam: HoParameter[] = [];
+    /** Store the interaction data support of the link */
     public mitabCouples: MitabParameter[][] = [];
+    /** If not visible, link will be hidden in the representation */
     public visible = true;
 
+    /** How to search taxons in taxons search */
     public static DEFAULT_TAXON_SEARCH_MODE = TAXON_EVERY;
 
+    /** Serialize the object */
     toString() {
         const mitabCouples: PSQData[][] = [];
 
@@ -38,6 +47,7 @@ export class HoParameterSet {
         });
     }
 
+    /** Clear this instance */
     remove() {
         this.lowQueryParam = [];
         this.highQueryParam = [];
@@ -48,14 +58,17 @@ export class HoParameterSet {
         return this.length;
     }
 
+    /** Number of valid homologies */
     get length() {
         return this.lowQueryParam.filter(e => e.valid).length;
     }
 
+    /** True if any homology support is valid */
     get isEmpty() {
         return this.length === 0;
     }
 
+    /** Get all valid templates (Accession number of the homologs) */
     get templates() {
         return [
             this.lowQueryParam.filter(e => e.valid).map(e => e.template),
@@ -63,6 +76,7 @@ export class HoParameterSet {
         ] as [string[], string[]];
     }
 
+    /** Templates, but unfiltered */
     get full_templates() {
         return [
             this.lowQueryParam.map(e => e.template),
@@ -70,6 +84,7 @@ export class HoParameterSet {
         ] as [string[], string[]];
     }
 
+    /** Add a new homology support */
     add(x: HVector, y: HVector) {
         this.lowQueryParam.push(new HoParameter(x));
         this.highQueryParam.push(new HoParameter(y));
@@ -77,8 +92,24 @@ export class HoParameterSet {
     }
 
     /**
+     * Apply filters to the homology support or the interaction data.
+     * After a trim, check if the HoParameterSet is still valid with `.isEmpty`.
      * 
-     * @param Object Variables **exp_methods** and **taxons** are undefined OR Set of strings.  
+     * @param Object 
+     * **simPct**, **idPct** and **cvPct**, respectively similiarity, identity and coverage, are in *percentage* (0 to 100).
+     * Setting a value for those settings will invalidate homology supports *below* the threshold.
+     * 
+     * Setting a **eValue** will invalidate homology supports *above* the threshold.
+     * 
+     * Variables **exp_methods** and **taxons** are undefined OR Set of strings. They must *NOT* be arrays of string ! 
+     * 
+     * If you want reasons for what have been discarded by filters, you can enable the **logged** parameter with `true`.
+     * This function will return a array of tuples ([lowQuery, highQuery]) with fail information.
+     * Otherwise, return value will be an empty array.
+     * 
+     * **destroy_identical** will identify identical identities parameter and filter them (at the end, there will be only one).
+     * This step is CPU-intensive, do not enable it everytime you filter ! 
+     * It is recommanded to activate both **destroy_identical** and **definitive** in order to permanently remove duplicated homology support.
      */
     trim({
         simPct = 0, 
@@ -217,6 +248,7 @@ export class HoParameterSet {
         return reasons;
     }
 
+    /** Unserialize a HoParameterSet */
     static from(obj: { lowQueryParam: {data: string[], valid: boolean}[], highQueryParam: {data: string[], valid: boolean}[], visible: boolean }) {
         const param = new HoParameterSet;
 
@@ -236,6 +268,7 @@ export class HoParameterSet {
         return param;
     }
 
+    /** Iterate through the homology support and the interaction data */
     *full_iterator(visible_only = false) : IterableIterator<[HoParameter, HoParameter, PSQData[]]> {
         // @ts-ignore
         for (const values of zip(this.lowQueryParam, this.highQueryParam, this.mitabCouples) as IterableIterator<[HoParameter, HoParameter, MitabParameter[]]>) {
@@ -250,6 +283,7 @@ export class HoParameterSet {
         }
     }
 
+    /** Iterate through the homology support */
     *[Symbol.iterator]() : IterableIterator<[HoParameter, HoParameter]> {
         for (const values of zip(this.lowQueryParam, this.highQueryParam)) {
             yield values as [HoParameter, HoParameter];
@@ -257,6 +291,7 @@ export class HoParameterSet {
     }
 }
 
+/** Encapsulate PSQData to store validity */
 export class MitabParameter {
     public data: PSQData;
     public valid = true;
@@ -266,6 +301,7 @@ export class MitabParameter {
     }
 }
 
+/** Store one homology support */
 export class HoParameter {
     public data: HVector;
     public valid = true;
@@ -274,26 +310,32 @@ export class HoParameter {
         this.data = hVector;
     }
 
+    /** Get the homolog sequence length */
     get length() : number {
         return parseInt(this.data[3]) - parseInt(this.data[2]) + 1;
     }
 
+    /** Get the identifier (accession number) of the homolog */
     get template() {
         return this.data[0];
     }
 
+    /** Get the similarity percentage */
     get simPct() {
         return 100 * Number(this.data[7]) / this.length;
     }
 
+    /** Get the identity percentage */
     get idPct() {
         return 100 * Number(this.data[8]) / this.length;
     }
 
+    /** Get the coverage percentage */
     get cvPct() {
         return 100 * this.length / parseInt(this.data[1]);
     }
 
+    /** Get the e-value */
     get eValue() {
         return Number(this.data[9]);
     }

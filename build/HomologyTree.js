@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * Permet de lire un arbre d'homologie (tel Homology_R6.json) au format JSON.
- *
+ * Permet de lire un arbre d'homologie (tel uniprot_R6_homology.json) au format JSON.
  */
 class HomologTree {
     /**
@@ -35,6 +34,34 @@ class HomologTree {
     init() {
         return this.init_promise;
     }
+    /**
+     * Add a unproved edge with fake data.
+     * @param edge
+     */
+    addArtefactal(edge) {
+        return [
+            this.addPartialArtefactual(edge),
+            this.addPartialArtefactual(edge, 'target')
+        ];
+    }
+    addPartialArtefactual(edge, source = "source") {
+        const edge1 = edge[source], edge2 = edge[source === 'source' ? 'target' : 'source'];
+        if (!(edge1 in this.data)) {
+            this.data[edge1] = {};
+        }
+        const l = String(edge.length);
+        const l_P_1 = String(Number(l) + 1);
+        if (!(edge2 in this.data[edge1])) {
+            this.data[edge1][edge2] = [[l, "1", l_P_1, l, "1", l_P_1, l, l, "1e-150"]];
+        }
+        return {
+            [edge2]: [edge1, ...this.data[edge1][edge2][0]]
+        };
+    }
+    /**
+     * Get all the BLAST results for one protein identifier, ordered by homolog in R6 accession number
+     * @param psqId
+     */
     getChildrenData(psqId) {
         if (!(psqId in this.data)) {
             return {};
@@ -43,18 +70,29 @@ class HomologTree {
         for (const homologKey in this.data[psqId]) {
             result[homologKey] = [psqId];
             const hVector = this.data[psqId][homologKey][0]; // Tableau de résultat blast (ne prend que le premier)
-            for (const e of hVector) {
-                result[homologKey].push(e);
-            }
+            result[homologKey].push(...hVector);
         }
         return result;
     }
+    /**
+     * Serialize the HomologyTree object
+     */
     serialize() {
         return JSON.stringify({ data: this.data, version: 1 });
     }
+    /**
+     * Get the number of homologs of R6 proteins
+     *
+     * @readonly
+     * @memberof HomologTree
+     */
     get length() {
         return Object.keys(this.data).length;
     }
+    /**
+     * Instanciate a new HomologyTree object from a serialized string
+     * @param serialized
+     */
     static from(serialized) {
         const newobj = new HomologTree("");
         const homolog_data = JSON.parse(serialized);

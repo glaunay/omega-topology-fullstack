@@ -1,3 +1,6 @@
+/**
+ * Store GO Terms and protein accession numbers related to them.
+ */
 export default class GoTermsContainer {
     protected data = new Map<string, [string, Set<string>]>();
 
@@ -8,7 +11,11 @@ export default class GoTermsContainer {
      */
     add(prots: ProtGOTerms) {
         for (const [prot_id, terms] of Object.entries(prots)) {
-            for (const [id, term] of Object.entries(terms)) {
+            for (let [id, term] of Object.entries(terms)) {
+                if (!id.startsWith('GO:')) {
+                    id = "GO:" + id;
+                }
+
                 if (!this.data.has(id)) {
                     this.data.set(id, [term.term, new Set]);
                 }
@@ -20,7 +27,7 @@ export default class GoTermsContainer {
 
     /**
      * For a single GOTerm ID, return a list of proteins that matching this term
-     * @param term 
+     * @param term Term ID 
      */    
     search(term: string) : string[] {
         if (!term.startsWith('GO:')) {
@@ -84,7 +91,16 @@ export default class GoTermsContainer {
         return [...terms];
     }
 
+    /**
+     * Get the related name for a Go Term ID.
+     * 
+     * @param term_id 
+     */
     getNameOfTerm(term_id: string) {
+        if (!term_id.startsWith('GO:')) {
+            term_id = "GO:" + term_id;
+        }
+
         if (this.data.has(term_id)) {
             return this.data.get(term_id)[0];
         }
@@ -92,28 +108,43 @@ export default class GoTermsContainer {
         return undefined;
     }
 
+    /** See instance.values() */
     *[Symbol.iterator]() : IterableIterator<[string, Set<string>]> {
         yield* this.values();
     }
 
+    /**
+     * Iterate through the container entries.
+     * Keys: GO IDs; Values: Tuple<term_name, Set<Protein Accession Number>>
+     */
     *entries() {
         yield* this.data.entries();
     }
 
+    /**
+     * Iterate through the values.
+     * Values: Tuple<GO Id, Set<Protein Accession Number>>
+     */
     *values() : IterableIterator<[string, Set<string>]> {
         for (const [id, v] of this.data) {
             yield [id, v[1]];
         }
     }
 
+    /**
+     * Iterate through the keys.
+     * Keys: GO IDs
+     */
     *keys() {
         yield* this.data.keys();
     }
 
+    /** Number of GO IDs stored in this container */
     get length() {
         return this.data.size;
     }
 
+    /** Empty the container */
     clear() {
         this.data.clear();
     }
