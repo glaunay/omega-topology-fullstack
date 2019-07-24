@@ -579,6 +579,9 @@ export default class OmegaTopology {
             return;
         }
 
+        if (!this.hData) {
+            this.hData = new HomologTree("");
+        }
         // Create fake homology data
         const [dataNewA, dataNewB] = this.hData.addArtefactal(edgeData);
 
