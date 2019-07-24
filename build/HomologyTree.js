@@ -49,7 +49,7 @@ class HomologTree {
         if (!(edge1 in this.data)) {
             this.data[edge1] = {};
         }
-        const l = String(edge.length);
+        const l = "100";
         const l_P_1 = String(Number(l) + 1);
         if (!(edge2 in this.data[edge1])) {
             this.data[edge1][edge2] = [[l, "1", l_P_1, l, "1", l_P_1, l, l, "1e-150"]];

@@ -64,7 +64,7 @@ export default class HomologTree {
             this.data[edge1] = {};
         }
 
-        const l = String(edge.length);
+        const l = "100";
         const l_P_1 = String(Number(l) + 1);
 
         if (!(edge2 in this.data[edge1])) {

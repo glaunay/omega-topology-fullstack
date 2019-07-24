@@ -26,7 +26,6 @@ interface SerializedOmegaTopology {
 export interface ArtefactalEdgeData {
     source: string;
     target: string;
-    length: number;
     mitabData?: PSQData[];
 }
 

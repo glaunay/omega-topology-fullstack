@@ -450,6 +450,9 @@ class OmegaTopology {
         if (this.ajdTree.get(node1, node2)) {
             return;
         }
+        if (!this.hData) {
+            this.hData = new HomologyTree_1.default("");
+        }
         // Create fake homology data
         const [dataNewA, dataNewB] = this.hData.addArtefactal(edgeData);
         const params = this.addEdgeSet(dataNewA, dataNewB);
