@@ -57,6 +57,12 @@ class UniprotContainer {
         this.tiny.clear();
         this.full.clear();
     }
+    set uniprot_url(v) {
+        this.url = v;
+    }
+    get uniprot_url() {
+        return this.url;
+    }
 }
 exports.UniprotContainer = UniprotContainer;
 exports.default = UniprotContainer;

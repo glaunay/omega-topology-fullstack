@@ -48,7 +48,7 @@ export class PSQData {
         }
     }
 
-    /** Get the 2 protein IDs present in the line */
+    /** The 2 protein IDs present in the line */
     get ids() : [string, string] {
         return [this.data[0].value.split(':', 2).pop(), this.data[1].value.split(':', 2).pop()];
     }
@@ -174,7 +174,7 @@ export class PSQData {
     }
 
     /**
-     * Get the interactors ID + alternates IDs
+     * Interactors ID + alternates IDs
      * 
      * @returns Tuple<[type, id1][], [type, id2][]>
      */

@@ -131,7 +131,7 @@ export default class PSICQuic {
     }
 
     /**
-     * Get the size of the records map.
+     * Size of the records map.
      */
     get length() : number {
         return this.records.size;

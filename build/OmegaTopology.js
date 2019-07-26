@@ -31,7 +31,6 @@ class OmegaTopology {
      * @param {PSICQuic} [mitabObj] If you want to have a custom Mitab object, specify it here. Otherwise, create a new object with a empty PSICQuic obj.
      */
     constructor(homologyTree, mitabObj, uniprot_url) {
-        this.uniprot_url = uniprot_url;
         /**
          * Represents all the edges / nodes held by OmegaTopology.
          */
@@ -67,6 +66,9 @@ class OmegaTopology {
             return value;
         });
         this.G = graphlib_1.json.read(obj.graph);
+        if (obj.taxid) {
+            this.taxid = obj.taxid;
+        }
         if (obj.homolog) {
             this.hData = HomologyTree_1.default.from(obj.homolog);
         }
@@ -120,7 +122,8 @@ class OmegaTopology {
         const obj = {
             graph: graphlib_1.json.write(this.G),
             tree: this.ajdTree.serialize(),
-            version: 1
+            taxid: this.taxomic_id,
+            version: 1.1
         };
         if (with_homology_tree) {
             obj.homolog = this.hData.serialize();
@@ -137,7 +140,7 @@ class OmegaTopology {
         if (!OmegaTopology.isASerializedOmegaTopology(obj)) {
             throw new Error("Object is not omegatopology serialization");
         }
-        const supported = [1];
+        const supported = [1, 1.1];
         if (!supported.includes(obj.version)) {
             throw new Error("Unsupported OmegaTopology version: " + obj.version);
         }
@@ -350,11 +353,11 @@ class OmegaTopology {
     /**
      * Prune and renew the graph.
      *
-     * @param {number} [max_distance=5] If you want all the connex composants, use -1 or ±Infinity
+     * @param {number} [max_distance] If you want all the connex composants, use -1 or ±Infinity
      * @param {...string[]} seeds All the seeds you want to search
      * @returns {Graph}
      */
-    prune(max_distance = 5, ...seeds) {
+    prune(max_distance = Infinity, ...seeds) {
         this.constructGraph();
         let t = Date.now();
         console.log("Graph has", this.G.nodeCount(), "nodes and", this.G.edgeCount(), "edges");
@@ -525,10 +528,15 @@ class OmegaTopology {
         return [...this.iterVisible()].length;
     }
     /**
-     * Number of visible nodes. (must have constructed graph with `.constructGraph()` before)
+     * Number of visible nodes.
      */
     get nodeNumber() {
-        return Object.keys(this.nodes).length;
+        const nodes = new Set;
+        for (const [n1, n2,] of this.iterVisible()) {
+            nodes.add(n1);
+            nodes.add(n2);
+        }
+        return nodes.size;
     }
     /**
      * Get all the nodes.
@@ -663,12 +671,26 @@ class OmegaTopology {
     }
     /* --- UNIPROT DATA --- */
     async downloadGoTerms(...protein_ids) {
+        try {
+            if (fetch === undefined) {
+                throw new Error;
+            }
+        }
+        catch (e) {
+            var fetch = require('node-fetch');
+        }
         const req = await fetch(this.uniprot_url + "/go", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ids: protein_ids })
         }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
         this.go_terms.add(req);
+    }
+    async downloadNeededGoTerms() {
+        // Get all proteins ids
+        const nodes = this.G.nodes();
+        // Bulk download
+        await this.downloadGoTerms(...nodes);
     }
     async getProteinInfos(protein_id) {
         return this.uniprot_container.getFullProtein(protein_id);
@@ -690,7 +712,22 @@ class OmegaTopology {
     get uniprot_container() {
         return this._uniprot_container;
     }
+    get uniprot_url() {
+        return this.uniprot_container.uniprot_url;
+    }
+    set uniprot_url(v) {
+        this.uniprot_container.uniprot_url = v;
+    }
     /* --- UTILITIES --- */
+    get taxomic_id() {
+        if (this.taxid) {
+            return this.taxid;
+        }
+        if (this.hData) {
+            return this.taxid = this.hData.taxid;
+        }
+        return undefined;
+    }
     toString() {
         return JSON.stringify(Array.from(this.iterVisible()));
     }
