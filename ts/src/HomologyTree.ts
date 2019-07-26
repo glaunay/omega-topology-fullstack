@@ -11,17 +11,20 @@ export interface HomologChildren {
 }
 
 /**
- * Permet de lire un arbre d'homologie (tel uniprot_R6_homology.json) au format JSON.
+ * Allow to read a homology tree (like uniprot_R6_homology.json) formatted in JSON.
  */
-export default class HomologTree {
+export default class HomologyTree {
     public data: HomologInfo = {};
     protected init_promise: Promise<void> | undefined;
     protected internal_tax_id: string;
 
     /**
-     * @param filename Le fichier ne doit être précisé SEULEMENT si l'environnement est node.js
+     * HomologyTree constructor.
+     * 
+     * @nodeonly If you specify a filename
+     * @param filename File should be specifiy **ONLY** if you are in Node.js environnement
      */
-    constructor(filename: string) {
+    constructor(filename?: string) {
         if (!filename) {
             this.init_promise = Promise.resolve();
         }
@@ -108,6 +111,11 @@ export default class HomologTree {
         return result;
     }
 
+    /**
+     * Current taxid of the loaded homology tree specie.
+     * 
+     * @readonly
+     */
     get taxid() {
         return this.internal_tax_id;
     }
@@ -120,10 +128,9 @@ export default class HomologTree {
     }
 
     /**
-     * Get the number of homologs of R6 proteins
+     * Number of homologs of R6 proteins
      *
      * @readonly
-     * @memberof HomologTree
      */
     get length() {
         return Object.keys(this.data).length;
@@ -133,8 +140,8 @@ export default class HomologTree {
      * Instanciate a new HomologyTree object from a serialized string
      * @param serialized 
      */
-    static from(serialized: string) : HomologTree {
-        const newobj = new HomologTree("");
+    static from(serialized: string) : HomologyTree {
+        const newobj = new HomologyTree("");
         const homolog_data = JSON.parse(serialized);
 
         const supported = [2];

@@ -68,7 +68,7 @@ export class HoParameterSet {
         return this.length === 0;
     }
 
-    /** Get all valid templates (Accession number of the homologs) */
+    /** All valid templates (accession number of the homologs) */
     get templates() {
         return [
             this.lowQueryParam.filter(e => e.valid).map(e => e.template),
@@ -293,7 +293,9 @@ export class HoParameterSet {
 
 /** Encapsulate PSQData to store validity */
 export class MitabParameter {
+    /** Hold the reald MI Tab data */
     public data: PSQData;
+    /** If the PSQData is valid or not */
     public valid = true;
 
     constructor(d: PSQData) {
@@ -310,32 +312,32 @@ export class HoParameter {
         this.data = hVector;
     }
 
-    /** Get the homolog sequence length */
+    /** Homolog sequence length */
     get length() : number {
         return parseInt(this.data[3]) - parseInt(this.data[2]) + 1;
     }
 
-    /** Get the identifier (accession number) of the homolog */
+    /** Identifier (accession number) of the homolog */
     get template() {
         return this.data[0];
     }
 
-    /** Get the similarity percentage */
+    /** Sequence similarity percentage */
     get simPct() {
         return 100 * Number(this.data[7]) / this.length;
     }
 
-    /** Get the identity percentage */
+    /** Sequence identity percentage */
     get idPct() {
         return 100 * Number(this.data[8]) / this.length;
     }
 
-    /** Get the coverage percentage */
+    /** Sequence coverage percentage */
     get cvPct() {
         return 100 * this.length / parseInt(this.data[1]);
     }
 
-    /** Get the e-value */
+    /** E-value computed by PSI-BLAST */
     get eValue() {
         return Number(this.data[9]);
     }
