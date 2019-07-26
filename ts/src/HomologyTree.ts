@@ -113,6 +113,7 @@ export default class HomologyTree {
 
     /**
      * Current taxid of the loaded homology tree specie.
+     * Need a homology file that includes a taxid key.
      * 
      * @readonly
      */

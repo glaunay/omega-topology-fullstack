@@ -14,20 +14,20 @@ export default class PSICQuic {
      * Registered publications. (I don't know what it is, please be comprehensive)
      */
     public registredPublications: { [pubId: string]: string } = {};
-    protected init_promise = Promise.resolve();
 
     /**
      * Creates an instance of PSICQuic.
      * @param {string} [mode="LOOSE"] >deprecated Unused.
      * @param {boolean} [keep_raw=false] Keep the raw line when creating PSQData children.
      */
-    constructor(protected mode = "LOOSE", protected keep_raw = false) { }
+    constructor(protected mode = "LOOSE", public keep_raw = false) { }
 
     /**
-     * Promise symbolizing the instance state. Resolved when ready.
+     * @deprecated
+     * Instance is already ready !
      */
     init() {
-        return this.init_promise;
+        return Promise.resolve();
     }
 
     /**
@@ -422,6 +422,8 @@ export default class PSICQuic {
      * @param predicate 
      */
     filter(uniprot: string[] = [], predicate?: Function) {
+        this.records.getAllFrom
+
         const target = new PSICQuic;
 
         if (uniprot.length) {

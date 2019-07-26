@@ -98,7 +98,7 @@ export class PSQData {
     }
 
     /** 
-     * Interaction detection method of this interaction
+     * Detection method of this interaction
      */
     get interactionDetectionMethod() {
         return this.data[6].data[0].value;

@@ -40,9 +40,19 @@ Short description of all the containers available in this library, and a quick o
 
 ### HomologyTree
 
+Store all homology data contained in the homology JSON file, output of the *divisomeFactory* pipeline.
 
+You can instanciate the class with the filename of the file, and wait for initialization with the `.init()` method, which returns a `Promise`.
+
+This container is meant to be given to a `OmegaTopology` instance, you should not manipulate it by yourself.
+
+---
 
 ### PSICQuic and its children
+
+See [PSICQuic.md](readme/PSICQuic.md).
+
+---
 
 ### HoParameter and HoParameterSet
 
