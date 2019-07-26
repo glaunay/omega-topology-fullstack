@@ -16,6 +16,7 @@ export interface HomologChildren {
 export default class HomologTree {
     public data: HomologInfo = {};
     protected init_promise: Promise<void> | undefined;
+    protected internal_tax_id: string;
 
     /**
      * @param filename Le fichier ne doit être précisé SEULEMENT si l'environnement est node.js
@@ -34,7 +35,17 @@ export default class HomologTree {
     
                     // Parse le JSON, l'enregistre dans this.data 
                     // et résoud la promesse sans aucune donnée
-                    resolve(void (this.data = JSON.parse(data)));
+                    const filedata = JSON.parse(data);
+
+                    if ("taxid" in filedata) {
+                        this.data = filedata.data;
+                        this.internal_tax_id = typeof filedata.taxid === 'string' ? filedata.taxid : String(filedata.taxid);
+                    }
+                    else {
+                        this.data = filedata;
+                    }
+
+                    resolve();
                 })
             });
         }
@@ -97,11 +108,15 @@ export default class HomologTree {
         return result;
     }
 
+    get taxid() {
+        return this.internal_tax_id;
+    }
+
     /**
      * Serialize the HomologyTree object
      */
     serialize() : string {
-        return JSON.stringify({ data: this.data, version: 1 });
+        return JSON.stringify({ data: this.data, taxid: this.taxid, version: 2 });
     }
 
     /**
@@ -122,12 +137,13 @@ export default class HomologTree {
         const newobj = new HomologTree("");
         const homolog_data = JSON.parse(serialized);
 
-        const supported = [1];
+        const supported = [2];
         if (!supported.includes(homolog_data.version)) {
             throw new Error("Unsupported HomologTree version: " + homolog_data.version);
         }
 
         newobj.data = homolog_data.data;
+        newobj.internal_tax_id = homolog_data.taxid;
         return newobj;
     }
 

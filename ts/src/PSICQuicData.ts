@@ -1,18 +1,40 @@
 import md5 from "md5";
 import zip from "python-zip";
 
+const PSQ_FIELDS = ["idA", "idB", "altA", "altB", "aliasA", "aliasB", "interactionDetectionMethod", "firstAuthor", "pubid", "taxidA", "taxidB",
+"interactionTypes", "sourceDatabases", "interactionIdentifiers", "confidenceScore", "complexExpansion", "biologicalRoleA"
+, "biologicalRoleB", "experimentalRoleA", "experimentalRoleB", "interactorTypeA", "interactorTypeB", "xRefA", "xRefB",
+"xRefInteraction", "annotationA", "annotationB", "annotationInteraction", "taxidHost", "parameters", "creationDate",
+"updateDate", "checksumA", "checksumB", "negative", "featuresA", "featuresB", "stoichiometryA", "stoichiometryB",
+"identificationMethodA", "identificationMethodB"];
+
+const INDEXED_PSQ_FIELD = {};
+
+for (const [index, value] of PSQ_FIELDS) {
+    INDEXED_PSQ_FIELD[index] = value;
+    INDEXED_PSQ_FIELD[value] = index;
+}
+
+/**
+ * Hold the data of one MI Tab line
+ */
 export class PSQData {
+    /** Fields, indexed */
     public data: PSQDatum[];
+    /** Hash of the line */
     public hash: string;
+    /** Raw line (not stored if keep_raw is false) */
     public raw: string;
 
-    public static readonly PSQ_FIELDS = ["idA", "idB", "altA", "altB", "aliasA", "aliasB", "interactionDetectionMethod", "firstAuthor", "pubid", "taxidA", "taxidB",
-    "interactionTypes", "sourceDatabases", "interactionIdentifiers", "confidenceScore", "complexExpansion", "biologicalRoleA"
-    , "biologicalRoleB", "experimentalRoleA", "experimentalRoleB", "interactorTypeA", "interactorTypeB", "xRefA", "xRefB",
-    "xRefInteraction", "annotationA", "annotationB", "annotationInteraction", "taxidHost", "parameters", "creationDate",
-    "updateDate", "checksumA", "checksumB", "negative", "featuresA", "featuresB", "stoichiometryA", "stoichiometryB",
-    "identificationMethodA", "identificationMethodB"];
+    public static readonly PSQ_FIELDS = PSQ_FIELDS;
+    public static readonly INDEXED_PSQ_FIELDS = INDEXED_PSQ_FIELD;
 
+    /**
+     * Build a new PSQData object with a raw MI Tab line.
+     * 
+     * @param raw Raw line
+     * @param keep_raw If the line is meant to be saved in raw property
+     */
     constructor(raw: string, keep_raw = false) {
         this.data = raw.split(/\t+/g).filter(str => str.trim().length > 0).map(str => new PSQDatum(str));
         this.hash = md5(raw);
@@ -21,15 +43,12 @@ export class PSQData {
         }
 
         if (this.data.length !== 15 && this.data.length !== 42) {
-            // for (const [i, e] of enumerate(this.data)) {
-            //     console.log(`[${i}] ${e}`);
-            // }
-
             throw new Error("Uncorrect number of tabulated fields on input [" + this.data.length + "] at:\n" + raw);
         }
     }
 
-    get ids() {
+    /** Get the 2 protein IDs present in the line */
+    get ids() : [string, string] {
         return [this.data[0].value.split(':', 2).pop(), this.data[1].value.split(':', 2).pop()];
     }
 
@@ -153,20 +172,47 @@ export class PSQData {
         }
     }
 
-    hasInteractors(mode = 'STRICT') : boolean {
-        //// TODO
-        return false;
+    /**
+     * Get a MI Tab **raw** information by index (splitted by '\t')
+     * @param i 
+     */
+    index(i: number) {
+        if (i in this.data) {
+            return this.data[i].toString();
+        }
+        return undefined;
     }
 
-    getNames() {
-        // TODO
+    /**
+     * Get the MI Tab **raw** information of a field by his name.
+     * 
+     * You can explore field name in `PSQData.PSQ_FIELDS`.
+     * 
+     * @param name Name of the field to get
+     */
+    rawField(name: string) {
+        const field_index: number = PSQData.INDEXED_PSQ_FIELDS[name];
+
+        if (field_index !== undefined) {
+            return this.index(field_index);
+        }
+        return undefined;
     }
-    
-    getPartners() {
-        // TODO
-        // Ask for partners
-        // Extract uniprot id
-        // fill a 'p->{ m_0, m_1, ..., m_n,}, where m's are uniprot match
+
+    /**
+     * Get the `PSQDatum` by his name.
+     * 
+     * You can explore field name in `PSQData.PSQ_FIELDS`.
+     * 
+     * @param name Name of the field to get
+     */
+    field(name: string) {
+        const field_index: number = PSQData.INDEXED_PSQ_FIELDS[name];
+
+        if (field_index !== undefined) {
+            return this.data[field_index];
+        }
+        return undefined;
     }
 }
 
