@@ -23,13 +23,13 @@ class PSICQuic {
          * Registered publications. (I don't know what it is, please be comprehensive)
          */
         this.registredPublications = {};
-        this.init_promise = Promise.resolve();
     }
     /**
-     * Promise symbolizing the instance state. Resolved when ready.
+     * @deprecated
+     * Instance is already ready !
      */
     init() {
-        return this.init_promise;
+        return Promise.resolve();
     }
     /**
      * Read one or multiple Mitab lines and register then in records.
@@ -366,6 +366,7 @@ class PSICQuic {
      * @param predicate
      */
     filter(uniprot = [], predicate) {
+        this.records.getAllFrom;
         const target = new PSICQuic;
         if (uniprot.length) {
             const buffer = new Set(uniprot);

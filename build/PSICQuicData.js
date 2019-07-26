@@ -79,7 +79,7 @@ class PSQData {
         return this.data[12].data[0].annotation ? this.data[12].data[0].annotation : this.data[12].data[0].value;
     }
     /**
-     * Interaction detection method of this interaction
+     * Detection method of this interaction
      */
     get interactionDetectionMethod() {
         return this.data[6].data[0].value;
