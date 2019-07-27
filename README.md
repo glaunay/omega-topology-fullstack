@@ -265,13 +265,13 @@ import { buildNetwork } from './some_file';
 const topology = buildNetwork();
 ```
 
-Now, all the core logic will be the usage of `.trimEdges()` method. It take a object of filters in object, with some default parameters. A call to this method without any filter will makes all links/nodes visibles in the internal network.
+Now, all the core logic will be the usage of `.trimEdges()` method. It take a object of filters in parameter, with some default parameters. A call to this method without any filter will makes all links/nodes visibles in the internal network.
 
 `.trimEdges()` do NOT build the graph automatically, you *must* make a call to `.constructGraph()` to refresh the current stored graph inside the `OmegaTopology` object.
 
 ```ts
 // Applying some filters
-topo.trimEdges({
+topology.trimEdges({
     idPct: 30, // Minimum 30% identity
     simPct: 42, // Minimum 42% similarity
     definitive: true // Make the trim definitive (invalid links will be totally removed from the internal network)
