@@ -353,10 +353,8 @@ If you already have `PSQData` objects, load them inside the `PSICQuic` object (w
 ```ts
 const my_psidata: PSQData[] = getPSQData();
 
-// Link every line with .update method of the PSICQuic object
-for (const line of my_psidata) {
-    topology.psi.update(line);
-}
+// Link every line with .add method of the PSICQuic object
+topology.psi.add(...my_psidata);
 
 // Don't forget to link lines
 topology.linkMitabLines();
