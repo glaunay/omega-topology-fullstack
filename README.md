@@ -50,17 +50,35 @@ This container is meant to be given to a `OmegaTopology` instance, you should no
 
 ### PSICQuic and its children
 
+The PSICQuic container is the interaction data (MI Tab) organizer and manager.
+
 See [PSICQuic.md](readme/PSICQuic.md).
 
 ---
 
 ### HoParameter and HoParameterSet
 
-### UniprotContainer
+HoParameterSet is the structure that hold homology data of the two supposed interactors.
 
-### GoTermsContainer
+See [HoParameter.md](readme/HoParameter.md).
+
+---
+
+### UniprotContainer and GoTermsContainer
+
+Store UniProt data and quick access to GO Terms linked to proteins.
+
+See [UniProtContainers.md](readme/UniProtContainers.md).
+
+---
 
 ### OmegaTopology
+
+Manager of all thoses classes, and can construct a interolog network with all the homology data, interaction data, link UniProt data to the proteins, and trim the graph links or nodes.
+
+This class is fully documented, if you want to check the available methods, just check [OmegaTopology.ts](ts/src/OmegaTopology.ts) !
+
+All the common use cases of `OmegaTopology` are documented below, in the section **Usages**.
 
 
 ## Usages
@@ -308,7 +326,7 @@ To cancel a prune, call `.constructGraph()` or `.prune()` without any parameter.
 
 ---
 
-### Register MI Tab (interaction) data inside the object dynamically
+### <a id="register_dyna"></a> Register MI Tab (interaction) data inside the object dynamically
 
 When you load a network without the MI Tab file (serialized, or via the database of interactors), you don't have any MI Tab record.
 

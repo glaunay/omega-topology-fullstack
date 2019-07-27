@@ -1,11 +1,28 @@
+/**
+ * Store UniProt data fetched from omega-topology-uniprot micro-service
+ * 
+ * This container has a built-in cache system.
+ */
 export class UniprotContainer {
+    /** Storage for tiny protein objects */
     protected tiny = new Map<string, TinyProtein>();
+    /** Storage for full protein objets */
     protected full = new Map<string, UniprotProtein>();
 
+    /**
+     * Construct a new UniprotContainer object
+     * 
+     * @param url Micro-service URL
+     */
     constructor(
         protected url: string
     ) { }
 
+    /**
+     * Get the full protein object for one accession number
+     * 
+     * @param prot_id Protein accession number
+     */
     async getFullProtein(prot_id: string) {
         if (this.full.has(prot_id)) {
             return this.full.get(prot_id);
@@ -20,6 +37,9 @@ export class UniprotContainer {
         return undefined;
     }
 
+    /**
+     * Download full protein objects
+     */
     protected async downloadFullProteins(...prot_ids: string[]) {
         const req: UniprotProtein[] = await fetch(this.url + "/long", {
             method: 'POST',
@@ -32,21 +52,35 @@ export class UniprotContainer {
         }
     }
 
+    /**
+     * Download tiny protein objects
+     */
     async bulkTiny(...prot_ids: string[]) {
         // Garde uniquement les protéines qui n'existent pas dans tiny
         prot_ids = prot_ids.filter(p => !this.tiny.has(p));
 
-        const req: TinyProtein[] = await fetch(this.url + "/short", {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ ids: prot_ids })
-        }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
-
-        for (const p of req) {
-            this.tiny.set(p.accession, p);
+        if (prot_ids.length) {
+            const req: TinyProtein[] = await fetch(this.url + "/short", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ids: prot_ids })
+            }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
+            
+            for (const p of req) {
+                this.tiny.set(p.accession, p);
+            }
         }
     }
 
+    /**
+     * Search the proteins using gene names, protein name and keywords given by UniProt.
+     * 
+     * This method only search in the tiny container !
+     * 
+     * @param query String or Regex
+     * 
+     * @returns Array of protein IDs matching the query
+     */
     searchByAnnotation(query: string | RegExp) : string[] {
         const matching = new Set<string>();
 
@@ -63,10 +97,29 @@ export class UniprotContainer {
         return [...matching];
     }
 
+    /**
+     * Get a tiny protein object. Does not fetch from Internet when the protein isn't present !
+     */
     getTiny(id: string) {
         return this.tiny.get(id);
     }
+
+    /**
+     * Get tiny protein objects. If not present, fetch them.
+     */
+    async getOrFetchTiny(...ids: string[]) : Promise<TinyProtein[]> {
+        const ids_to_fetch = ids.filter(e => !this.tiny.has(e));
+
+        if (ids_to_fetch.length) {
+            await this.bulkTiny(...ids_to_fetch);
+        }
+
+        return ids.map(e => this.tiny.get(e)).filter(e => e);
+    }
     
+    /**
+     * Clear container data.
+     */
     clear() {
         this.tiny.clear();
         this.full.clear();
@@ -76,6 +129,9 @@ export class UniprotContainer {
         this.url = v;
     }
 
+    /**
+     * Micro-service omega-topology-uniprot URL
+     */
     get uniprot_url() {
         return this.url;
     }
@@ -116,7 +172,7 @@ export interface UniprotProtein {
     };
     gene: {
         name: UniprotValueEvidenceObject;
-        olnNames: UniprotValueEvidenceObject[];
+        olnNames?: UniprotValueEvidenceObject[];
     }[];
     comments: {
         type: string;
