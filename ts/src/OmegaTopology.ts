@@ -894,7 +894,7 @@ export default class OmegaTopology {
      * @param mitabs 
      */
     createArtefactual(edgeData: ArtefactalEdgeData, mitabs: ArtefactualMitabData[] = []) {
-        if (mitabs) {
+        if (mitabs.length) {
             edgeData.support = [];
         }
         for (const m of mitabs) {
