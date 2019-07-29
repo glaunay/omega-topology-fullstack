@@ -1,5 +1,6 @@
 import md5 from "md5";
 import zip from "python-zip";
+import { ArtefactualMitabData } from "./OmegaTopology";
 
 export class PSQData {
     public data: PSQDatum[];
@@ -27,6 +28,11 @@ export class PSQData {
 
             throw new Error("Uncorrect number of tabulated fields on input [" + this.data.length + "] at:\n" + raw);
         }
+    }
+
+    static create(fake: ArtefactualMitabData) : PSQData {
+        const line = `${fake.id1}\t${fake.id2}\t-\t-\t-\t-\t${fake.mi_ids.map(e => e.startsWith('MI:') ? e : "MI:"+e).join('|')}\t-\t${fake.pubmed_ids.join('|')}\t${fake.tax_ids.join('|')}\t${fake.tax_ids.join('|')}\t-\t-\t-\t-`;
+        return new PSQData(line);
     }
 
     get ids() {

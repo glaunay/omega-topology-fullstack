@@ -26,7 +26,15 @@ interface SerializedOmegaTopology {
 export interface ArtefactalEdgeData {
     source: string;
     target: string;
-    mitabData?: PSQData[];
+    support?: PSQData[];
+}
+
+export interface ArtefactualMitabData {
+    id1: string;
+    id2: string;
+    tax_ids: string[];
+    mi_ids: string[];
+    pubmed_ids: string[];
 }
 
 /**
@@ -587,8 +595,8 @@ export default class OmegaTopology {
         const params = this.addEdgeSet(dataNewA, dataNewB);
         this.constructGraph(true);
         
-        if (edgeData.mitabData) {
-            for (const l of edgeData.mitabData) {
+        if (edgeData.support) {
+            for (const l of edgeData.support) {
                 this.psi.update(l);
             }
             // Updating mitab lines
@@ -878,6 +886,23 @@ export default class OmegaTopology {
 
     
     /* --- UTILITIES --- */
+
+    /**
+     * Create artefactal data + mitab
+     * 
+     * @param edgeData 
+     * @param mitabs 
+     */
+    createArtefactual(edgeData: ArtefactalEdgeData, mitabs: ArtefactualMitabData[] = []) {
+        if (mitabs) {
+            edgeData.support = [];
+        }
+        for (const m of mitabs) {
+            edgeData.support.push(PSQData.create(m));
+        }
+
+        this.addArtefactualEdge(edgeData);
+    }
     
     toString() : string {
         return JSON.stringify(Array.from(this.iterVisible()));
