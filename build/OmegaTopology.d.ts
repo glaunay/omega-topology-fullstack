@@ -5,18 +5,39 @@ import GoTermsContainer from './GoTermsContainer';
 import UniprotContainer from './UniprotContainer';
 import { MDTree } from './MDTree';
 import PSICQuic from "./PSICQuic";
-interface NodeGraphComponent {
+import { PSQData } from "./PSICQuicData";
+export interface NodeGraphComponent {
     group: number;
     val: number;
 }
-interface SerializedOmegaTopology {
+export interface SerializedOmegaTopology {
     graph: Object;
     tree: string;
     homolog?: string;
     version: number;
+    taxid?: string;
 }
+export interface ArtefactalEdgeData {
+    source: string;
+    target: string;
+    support?: PSQData[];
+}
+export interface ArtefactualMitabData {
+    id1: string;
+    id2: string;
+    tax_ids: string[];
+    mi_ids: string[];
+    pubmed_ids: string[];
+}
+/**
+ * Store all informations about a interolog network.
+ *
+ * Store homology data and link existence via a MDTree<HoParameterSet> constructed via a HomologyTree,
+ * store interaction evidences via PSICQuic object,
+ * store UniProt data via UniprotContainer and GoTermsContainer,
+ * and can create a Graph object to represent the network.
+ */
 export default class OmegaTopology {
-    protected uniprot_url?: string;
     /**
      * Represents all the blast hits of current used organism.
      */
@@ -34,6 +55,7 @@ export default class OmegaTopology {
     mitab_loaded: boolean;
     protected go_terms: GoTermsContainer;
     protected _uniprot_container: UniprotContainer;
+    protected taxid: string;
     /**
      * GRAPH
      * Node type: string
@@ -45,7 +67,7 @@ export default class OmegaTopology {
      * Creates an instance of OmegaTopology.
      *
      * @param {HomologTree} [homologyTree] If you want to use a tree, specify it here. Required to build edges.
-     * @param {MitabTopology} [mitabObj] If you want to have a custom Mitab object, specify it here. Otherwise, create a new object with a empty PSICQuic obj.
+     * @param {PSICQuic} [mitabObj] If you want to have a custom Mitab object, specify it here. Otherwise, create a new object with a empty PSICQuic obj.
      */
     constructor(homologyTree?: HomologTree, mitabObj?: PSICQuic, uniprot_url?: string);
     /**
@@ -55,21 +77,60 @@ export default class OmegaTopology {
      */
     init(): Promise<void>;
     /**
-     * Make all nodes "visible" (reverse a prune) then construct the graph.
+     * Init this object with a serialized representation of OmegaTopology.
      *
-     * @param {string[]} seeds
-     * @returns {Graph}
-     * @memberof OmegaTopology
+     * @param {SerializedOmegaTopology} obj JSON.parsed serialized string
+     * @returns {this}
      */
-    constructGraph(build_edges_number?: boolean): Graph;
+    protected initFromSerialized(obj: SerializedOmegaTopology): this;
     /**
-     * Prune and renew the graph.
+     * Download a serialized OmegaTopology from an URL, then
+     * load the data in the current object.
      *
-     * @param {number} [max_distance=5] If you want all the connex composants, use -1 or ±Infinity
-     * @param {...string[]} seeds All the seeds you want to search
-     * @returns {Graph}
+     * @param {string} url
+     * @returns {Promise<void>}
      */
-    prune(max_distance?: number, ...seeds: string[]): Graph;
+    fromDownload(url: string): Promise<void>;
+    /**
+     * Dump the current generated graph to string.
+     *
+     * @param {boolean} [trim_invalid=true]
+     * @returns {string}
+     */
+    dumpGraph(trim_invalid?: boolean): string;
+    /**
+     * Serialize the OmegaTopology object.
+     * To reduce the size of the save, you can omit the homology tree.
+     * (Not required for usage when all the edges are built.)
+     *
+     * @param {boolean} [with_homology_tree=true]
+     * @returns {string}
+     */
+    serialize(with_homology_tree?: boolean): string;
+    /**
+     * Check if the given object is a valid OmegaTopology serialized.
+     *
+     * @static
+     * @param {*} obj
+     */
+    protected static checkSerializedObject(obj: any): void;
+    /**
+     * Return true if obj meets all required keys in a serialized OmegaTopology obj.
+     * @static
+     * @param {*} obj
+     * @returns {boolean}
+     */
+    protected static isASerializedOmegaTopology(obj: any): boolean;
+    /**
+     * Create a new OmegaTopology object from a serialized string.
+     * You can specify a Mitab object to attach to.
+     *
+     * @static
+     * @param {string} serialized
+     * @param {PSICQuic} [customMitab] Optional.
+     * @returns {OmegaTopology}
+     */
+    static from(serialized: string, customMitab?: PSICQuic): OmegaTopology;
     /**
      * Yield all the edges of internal tree (even not visible)
      * First and second string mean the edge label, HoParameterSet is the value.
@@ -92,151 +153,12 @@ export default class OmegaTopology {
      */
     templatePairs(): IterableIterator<[HoParameter, HoParameter]>;
     /**
-     * Get all the unique pairs in template pairs.
-     * Pairs are 100% unique and reversible, it mean you **can't** have [id1, id2] then [id2, id1].
+     * Add a couple of HomologChildren to internal tree.
      *
-     * @returns {[string, string][]}
+     * @param {HomologChildren} dataNewA
+     * @param {HomologChildren} dataNewB
      */
-    uniqueTemplatePairs(fromVisible?: boolean): [string, string][];
-    /**
-     * Dump the current generated graph to string.
-     *
-     * @param {boolean} [trim_invalid=true]
-     * @returns {string}
-     */
-    dumpGraph(trim_invalid?: boolean): string;
-    /**
-     * Serialize the OmegaTopology object.
-     * To reduce the size of the save, you can omit the homology tree.
-     * (Not required for usage when all the edges are built.)
-     *
-     * @param {boolean} [with_homology_tree=true]
-     * @returns {string}
-     */
-    serialize(with_homology_tree?: boolean): string;
-    /**
-     * Init this object with a serialized representation of OmegaTopology.
-     *
-     * @param {SerializedOmegaTopology} obj JSON.parsed serialized string
-     * @returns {this}
-     */
-    protected initFromSerialized(obj: SerializedOmegaTopology): this;
-    /**
-     * Create a new OmegaTopology object from a serialized string.
-     * You can specify a Mitab object to attach to.
-     *
-     * @static
-     * @param {string} serialized
-     * @param {MitabTopology} [customMitab] Optional.
-     * @returns {OmegaTopology}
-     */
-    static from(serialized: string, customMitab?: PSICQuic): OmegaTopology;
-    /**
-     * Check if the given object is a valid OmegaTopology serialized.
-     *
-     * @static
-     * @param {*} obj
-     */
-    protected static checkSerializedObject(obj: any): void;
-    /**
-     * Return true if obj meets all required keys in a serialized OmegaTopology obj.
-     * @static
-     * @param {*} obj
-     * @returns {boolean}
-     */
-    protected static isASerializedOmegaTopology(obj: any): boolean;
-    /**
-     * Download a serialized OmegaTopology from an URL, then
-     * load the data in the current object.
-     *
-     * @param {string} url
-     * @returns {Promise<void>}
-     */
-    fromDownload(url: string): Promise<void>;
-    /**
-     * Make a new graph using currently visible nodes/edges.
-     */
-    protected makeGraph(build_edges_number?: boolean): Graph;
-    downloadGoTerms(...protein_ids: string[]): Promise<void>;
-    getProteinInfos(protein_id: string): Promise<import("./UniprotContainer").UniprotProtein>;
-    /**
-     * Graph must have been already builded !
-     */
-    downloadNeededUniprotData(): Promise<void>;
-    readonly go_container: GoTermsContainer;
-    readonly uniprot_container: UniprotContainer;
-    /**
-     * Number of visible edges.
-     */
-    readonly edgeNumber: number;
-    /**
-     * Number of visible nodes.
-     */
-    readonly nodeNumber: number;
-    /**
-     * Get all the nodes.
-     * Graph must have been constructed with .constructGraphFrom() or .prune()
-     */
-    readonly nodes: [string, NodeGraphComponent][];
-    /**
-     * Get all the links.
-     * Graph must have been constructed with .constructGraphFrom() or .prune()
-     */
-    readonly links: [[string, string], HoParameterSet][];
-    /**
-     * Reference to the PSICQuic object used to add/delete Mitab lines.
-     */
-    readonly psi: PSICQuic;
-    /**
-     * Mitab lines must have been downloaded in PSICQuic object !
-     */
-    linkMitabLines(): void;
-    /**
-     * Read MI Tab lines and register then in PSICQuic object.
-     * When you have finished to read lines, call **.linkMitabLines()** !
-     *
-     * @returns Number of read couples
-     */
-    read(lines: string[] | string[][]): number;
-    /**
-     * Make a node visible.
-     * Warning: This function is NOT at constant complexity.
-     *
-     * @param {string} node
-     */
-    protected showNode(node: string): void;
-    /**
-     * Make a node hidden.
-     * Warning: This function is NOT at constant complexity.
-     *
-     * @param {string} node
-     */
-    protected hideNode(node: string): void;
-    /**
-     * Length of the internal tree.
-     */
-    readonly length: number;
-    /**
-     * Length of the homology tree.
-     */
-    readonly hDataLength: number;
-    readonly visible_experimental_methods_in_graph: Set<string>;
-    readonly experimental_methods_in_graph: Set<string>;
-    readonly visible_taxonomy_ids_in_graph: Set<string>;
-    readonly taxonomy_ids_in_graph: Set<string>;
-    /**
-     * Build the edges using the "reverse" method:
-     * Ask the CouchDB what is the partners of all the keys of homology tree.
-     * Then, get the data from all the partners from tree,
-     * then construct the internal tree using addEdgeSet.
-     *
-     * If you have imported a serialized string to create the OmegaTopology object,
-     * you DON'T have to do this again !
-     *
-     * @param {string} url URL to the omegalomodb service (with endpoint).
-     * @param {*} bar
-     */
-    buildEdgesReverse(url: string, bar?: any /** Progress bar (any for not importing Progress in clients) */): Promise<number>;
+    protected addEdgeSet(dataNewA: HomologChildren, dataNewB: HomologChildren): HoParameterSet[];
     /**
      * Build the edges using the full-stuffed Mitab Topology object.
      * You NEED to have a homology tree set, and a PSICQuic object with all the Mitab data.
@@ -250,6 +172,23 @@ export default class OmegaTopology {
      */
     buildEdges(): void;
     /**
+     * Build the edges using the "reverse" method:
+     * Ask the CouchDB what is the partners of all the keys of homology tree.
+     * Then, get the data from all the partners from tree,
+     * then construct the internal tree using addEdgeSet.
+     *
+     * Due to how the IDs are stored inside the database, this may cause doublons !
+     * Make sure to do a `.trimEdges({ definitive: true, destroy_identical: true })`
+     * after calling this method.
+     *
+     * If you have imported a serialized string to create the OmegaTopology object,
+     * you DON'T have to do this again !
+     *
+     * @param {string} url URL to the omegalomodb service (with endpoint).
+     * @param {*} bar
+     */
+    buildEdgesReverse(url: string, bar?: any /** Progress bar (any for not importing Progress in clients) */): Promise<number>;
+    /**
      * Trim edges that don't meet the threshold.
      * Trimmed edges won't be visible using iterVisible() and won't be
      * present during the next's prune() calls.
@@ -258,9 +197,9 @@ export default class OmegaTopology {
      *
      * If definitive = true, remove the nodes definitively from internal tree (useful for free RAM and speed up the prune process).
      *
-     * @param [simPct=0] Similarity (default 0)
-     * @param [idPct=0] Identity (default 0)
-     * @param [cvPct=0] Coverage (default 0)
+     * @param [simPct=0] Similarity, in percentage (default 0)
+     * @param [idPct=0] Identity, in percentage (default 0)
+     * @param [cvPct=0] Coverage, in percentage (default 0)
      * @param [eValue=1] E-value (default 1)
      * @param definitive Definitive trim (default false)
      * @param exp_det_methods Experimental detection methods required. Must be an array of **string**. Empty array if any type of detection is allowed.
@@ -278,13 +217,131 @@ export default class OmegaTopology {
         logged_id?: string;
         destroy_identical?: boolean;
     }): [number, number, any];
-    toString(): string;
     /**
-     * Add a couple of HomologChildren to internal tree.
+     * Prune and renew the graph.
      *
-     * @param {HomologChildren} dataNewA
-     * @param {HomologChildren} dataNewB
+     * @param {number} [max_distance] If you want all the connex composants, use -1 or ±Infinity
+     * @param {...string[]} seeds All the seeds you want to search
+     * @returns {Graph}
      */
-    addEdgeSet(dataNewA: HomologChildren, dataNewB: HomologChildren): void;
+    prune(max_distance?: number, ...seeds: string[]): Graph;
+    /**
+     * Add a fake edge to the internal graph. You must rebuild the graph with `.constructGraph()`
+     * in order to see the new artefactal edge.
+     * @param edgeData
+     */
+    addArtefactualEdge(edgeData: ArtefactalEdgeData): void;
+    /**
+     * Make a node visible.
+     * Warning: This function is NOT at constant complexity.
+     *
+     * @param {string} node
+     */
+    protected showNode(node: string): void;
+    /**
+     * Make a node hidden.
+     * Warning: This function is NOT at constant complexity.
+     *
+     * @param {string} node
+     */
+    protected hideNode(node: string): void;
+    /**
+     * Get all the unique pairs in template pairs.
+     * Pairs are 100% unique and reversible, it mean you **can't** have [id1, id2] then [id2, id1].
+     *
+     * @returns {[string, string][]}
+     */
+    uniqueTemplatePairs(fromVisible?: boolean): [string, string][];
+    /**
+     * Find proteins matching the query (in their annotation) and returns their IDs.
+     *
+     * Graph must have be constructed with `.constructGraph()` !
+     *
+     * @param query Query, in string or regexp
+     */
+    findProteinsInGraphByAnnotation(query: string | RegExp): string[];
+    /**
+     * Number of visible edges.
+     */
+    readonly edgeNumber: number;
+    /**
+     * Number of visible nodes.
+     */
+    readonly nodeNumber: number;
+    /**
+     * Get all the nodes.
+     * Graph must have been constructed with .constructGraph() or .prune()
+     */
+    readonly nodes: [string, NodeGraphComponent][];
+    /**
+     * Get all the links.
+     * Graph must have been constructed with .constructGraph() or .prune()
+     */
+    readonly links: [[string, string], HoParameterSet][];
+    /**
+     * Length of the internal tree.
+     */
+    readonly length: number;
+    /**
+     * Length of the homology tree.
+     */
+    readonly hDataLength: number;
+    /**
+     * Get experimental method available in visible graph.
+     */
+    readonly visible_experimental_methods_in_graph: Set<string>;
+    /**
+     * Get available taxonomic ids in visible graph.
+     */
+    readonly visible_taxonomy_ids_in_graph: Set<string>;
+    /**
+     * Make all nodes "visible" (reverse a prune) then construct the graph.
+     *
+     * @param {string[]} seeds
+     * @returns {Graph}
+     * @memberof OmegaTopology
+     */
+    constructGraph(build_edges_number?: boolean): Graph;
+    /**
+     * Make a new graph using currently visible nodes/edges.
+     */
+    protected makeGraph(build_edges_number?: boolean): Graph;
+    /**
+     * Read MI Tab lines and register then in PSICQuic object.
+     * When you have finished to read lines, call **.linkMitabLines()** !
+     *
+     * @returns Number of read couples
+     */
+    read(lines: string[] | string[][]): number;
+    /**
+     * Link MI Tab lines held by PSICQuic object inside the HoParameterSets
+     *
+     * Mitab lines must have been downloaded in PSICQuic object !
+     */
+    linkMitabLines(): void;
+    /**
+     * Reference to the PSICQuic object used to add/delete Mitab lines.
+     */
+    readonly psi: PSICQuic;
+    downloadGoTerms(...protein_ids: string[]): Promise<void>;
+    downloadNeededGoTerms(): Promise<void>;
+    getProteinInfos(protein_id: string): Promise<import("./UniprotContainer").UniprotProtein>;
+    /**
+     * Download the UniProt data for all nodes.
+     *
+     * Graph must have been already builded !
+     */
+    downloadNeededUniprotData(): Promise<void>;
+    readonly go_container: GoTermsContainer;
+    readonly uniprot_container: UniprotContainer;
+    uniprot_url: string;
+    /**
+     * Create artefactal data + mitab
+     *
+     * @param edgeData
+     * @param mitabs
+     */
+    createArtefactual(edgeData: ArtefactalEdgeData, mitabs?: ArtefactualMitabData[]): void;
+    readonly taxomic_id: string;
+    toString(): string;
 }
-export {};

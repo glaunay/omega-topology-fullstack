@@ -1,11 +1,10 @@
 import { PSQData } from "./PSICQuicData";
 import PSICQuic from "./PSICQuic";
 /**
- * @deprecated *USE ONLY MitabTopology*
+ * @deprecated Unused.
+ * No utility, PSICQuic object is ok.
  *
- * @export
- * @class LocalMitab
- * @extends {MitabTopology}
+ * To follow MI Tab download, FrontTopology has been implemented into the client side of the project.
  */
 export default class MitabTopology {
     protected psiq: PSICQuic;

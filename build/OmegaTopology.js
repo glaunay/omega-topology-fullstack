@@ -14,6 +14,7 @@ const helpers_1 = require("./helpers");
 const python_zip_1 = __importDefault(require("python-zip"));
 const md5_1 = __importDefault(require("md5"));
 const PSICQuic_1 = __importDefault(require("./PSICQuic"));
+const PSICQuicData_1 = require("./PSICQuicData");
 /**
  * Store all informations about a interolog network.
  *
@@ -460,8 +461,8 @@ class OmegaTopology {
         const [dataNewA, dataNewB] = this.hData.addArtefactal(edgeData);
         const params = this.addEdgeSet(dataNewA, dataNewB);
         this.constructGraph(true);
-        if (edgeData.mitabData) {
-            for (const l of edgeData.mitabData) {
+        if (edgeData.support) {
+            for (const l of edgeData.support) {
                 this.psi.update(l);
             }
             // Updating mitab lines
@@ -520,6 +521,20 @@ class OmegaTopology {
             unique_pairs.push(...Object.keys(templateColl.full_tree[id]).map(k => [id, k]));
         }
         return unique_pairs;
+    }
+    /**
+     * Find proteins matching the query (in their annotation) and returns their IDs.
+     *
+     * Graph must have be constructed with `.constructGraph()` !
+     *
+     * @param query Query, in string or regexp
+     */
+    findProteinsInGraphByAnnotation(query) {
+        // Recherche
+        const ids = this.uniprot_container.searchByAnnotation(query);
+        // Filtre en fonction des noeuds présents dans le graphe
+        const id_graph_set = new Set(this.nodes.map(e => e[0]));
+        return ids.filter(id => id_graph_set.has(id));
     }
     /**
      * Number of visible edges.
@@ -719,6 +734,21 @@ class OmegaTopology {
         this.uniprot_container.uniprot_url = v;
     }
     /* --- UTILITIES --- */
+    /**
+     * Create artefactal data + mitab
+     *
+     * @param edgeData
+     * @param mitabs
+     */
+    createArtefactual(edgeData, mitabs = []) {
+        if (mitabs.length) {
+            edgeData.support = [];
+        }
+        for (const m of mitabs) {
+            edgeData.support.push(PSICQuicData_1.PSQData.create(m));
+        }
+        this.addArtefactualEdge(edgeData);
+    }
     get taxomic_id() {
         if (this.taxid) {
             return this.taxid;

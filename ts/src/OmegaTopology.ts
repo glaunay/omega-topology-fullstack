@@ -680,6 +680,23 @@ export default class OmegaTopology {
     }
 
     /**
+     * Find proteins matching the query (in their annotation) and returns their IDs.
+     * 
+     * Graph must have be constructed with `.constructGraph()` !
+     * 
+     * @param query Query, in string or regexp
+     */
+    findProteinsInGraphByAnnotation(query: string | RegExp) {
+        // Recherche
+        const ids = this.uniprot_container.searchByAnnotation(query);
+
+        // Filtre en fonction des noeuds présents dans le graphe
+        const id_graph_set = new Set(this.nodes.map(e => e[0]));
+
+        return ids.filter(id => id_graph_set.has(id));
+    }
+
+    /**
      * Number of visible edges.
      */
     get edgeNumber() : number {
@@ -941,7 +958,7 @@ export default class OmegaTopology {
 
         this.addArtefactualEdge(edgeData);
     }
-    
+
     get taxomic_id() {
         if (this.taxid) {
             return this.taxid;

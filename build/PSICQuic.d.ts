@@ -3,27 +3,26 @@ import { PSQData } from './PSICQuicData';
 export declare type PSQDataHolder = ReversibleKeyMap<string, string, PSQData[]>;
 export default class PSICQuic {
     protected mode: string;
-    protected keep_raw: boolean;
+    keep_raw: boolean;
     /**
      * Records of Mitab currently loaded.
      */
     records: PSQDataHolder;
     /**
-     * Registered publications.
+     * Registered publications. (I don't know what it is, please be comprehensive)
      */
     registredPublications: {
         [pubId: string]: string;
     };
-    protected init_promise: Promise<void>;
     /**
      * Creates an instance of PSICQuic.
      * @param {string} [mode="LOOSE"] >deprecated Unused.
      * @param {boolean} [keep_raw=false] Keep the raw line when creating PSQData children.
-     * @param {boolean} [offline=true] >deprecated Always be true. Unused
      */
-    constructor(mode?: string, keep_raw?: boolean, offline?: boolean);
+    constructor(mode?: string, keep_raw?: boolean);
     /**
-     * Promise symbolizing the instance state. Resolved when ready.
+     * @deprecated
+     * Instance is already ready !
      */
     init(): Promise<void>;
     /**
@@ -35,20 +34,14 @@ export default class PSICQuic {
     /**
      * Asynchronously read a Mitabfile. (use streams !)
      *
+     * @nodeonly Only for Node.js. Will fail if used inside a browser context.
+     * @rameater This function, used with a big file, will require a huge amount of RAM.
+     * Make sure to use the V8 `--max-old-space-size={RAM}` parameter when starting the script.
+     *
      * @param {string} file Filename
      * @param {boolean} [with_progress=true] Create a progress bar of current read state.
      */
     read(file: string, with_progress?: boolean): Promise<{}>;
-    /**
-     * @deprecated SHOULD MOVE IT
-     *
-     * @param {string[]} ids
-     */
-    protected static bulkGetWrap(ids: string[]): any;
-    /**
-     * Clone current object. Warning, does NOT clone the records map, they will be shared.
-     */
-    clone(): void;
     /**
      * Add all the records of other to actual instance.
      *
@@ -56,25 +49,18 @@ export default class PSICQuic {
      */
     plus(other: PSICQuic): void;
     /**
-     * Check if PSQData is valid.
+     * Check if PSQData is valid and register publications inside it.
      *
      * @protected
      * @param {PSQData} psqDataObj
      */
     protected checkPsqData(psqDataObj: PSQData): boolean;
     /**
-     * Get the size of the records map.
+     * Size of the records map.
      */
     readonly length: number;
     toString(): string;
     readonly [Symbol.toStringTag]: string;
-    /**
-     * Get a PSQData by index.
-     * This is REALLY not recommanded, get using id instead !
-     *
-     * @param {number} i Index
-     */
-    getByIndex(i: number): PSQData;
     /**
      * Returns true of id exists in records.
      *
@@ -95,18 +81,30 @@ export default class PSICQuic {
      */
     get(id: string): PSQData[];
     /**
-     * Get all the lines associated to couple [id1, id2].
+     * @deprecated Alias for `.getCouple()`.
+     * @alias .getCouple()
+     * @see .getCouple()
+     */
+    getLines(id1: string, id2: string): PSQData[];
+    /**
+     * Get all the MI Tab lines and data associated to couple [id1, id2].
      *
      * @param {string} id1
      * @param {string} id2
      */
-    getLines(id1: string, id2: string): PSQData[];
+    getCouple(id1: string, id2: string): PSQData[];
+    /**
+     * @deprecated Alias for `.add()` with the support of only one PSQData at each call.
+     * @alias .add()
+     * @see .add()
+     */
+    update(psq: PSQData): void;
     /**
      * Register a PSQData in records.
      *
-     * @param {PSQData} psq
+     * @param psq MI Tab data (one, or mulitple data)
      */
-    update(psq: PSQData): void;
+    add(...psqs: PSQData[]): void;
     /**
      * Yields through the recorded PSQData.
      *
@@ -142,8 +140,10 @@ export default class PSICQuic {
      * Clear every Mitab records and publications saved.
      */
     clear(): void;
+    /**
+     * Make a JSON dump
+     */
     json(): string;
-    dump(): string;
     /**
      * Parse multiple lines then add then into the instance.
      *
@@ -157,8 +157,24 @@ export default class PSICQuic {
      * @param {PSQData[]} [added] Optional. Used to monitor which line is added.
      */
     protected parseLine(line: string, added?: PSQData[]): void;
+    /**
+     * Return all the PubMed IDs presents in the records
+     */
     protected countPmid(): Set<string>;
-    topology(type?: string): [Set<string>, Map<[string, string], PSQData[]>];
+    /**
+     * Get all the protein IDs and the "links" currently makables with current records.
+     *
+     * @returns Tuple<Set of protein accession n., Map<ProtID1, ProtID2, MITab data>>
+     */
+    topology(): [Set<string>, Map<[string, string], PSQData[]>];
+    /**
+     * @deprecated
+     */
     getBiomolecules(type?: string): string[];
+    /**
+     * Create a new PSICQuic object with current instance data who match the predicate or who match the given uniprot ids
+     * @param uniprot
+     * @param predicate
+     */
     filter(uniprot?: string[], predicate?: Function): PSICQuic;
 }

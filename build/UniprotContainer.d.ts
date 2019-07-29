@@ -1,15 +1,62 @@
-export default class UniprotContainer {
+/**
+ * Store UniProt data fetched from omega-topology-uniprot micro-service
+ *
+ * This container has a built-in cache system.
+ */
+export declare class UniprotContainer {
     protected url: string;
+    /** Storage for tiny protein objects */
     protected tiny: Map<string, TinyProtein>;
+    /** Storage for full protein objets */
     protected full: Map<string, UniprotProtein>;
+    /**
+     * Construct a new UniprotContainer object
+     *
+     * @param url Micro-service URL
+     */
     constructor(url: string);
+    /**
+     * Get the full protein object for one accession number
+     *
+     * @param prot_id Protein accession number
+     */
     getFullProtein(prot_id: string): Promise<UniprotProtein>;
+    /**
+     * Download full protein objects
+     */
     protected downloadFullProteins(...prot_ids: string[]): Promise<void>;
+    /**
+     * Download tiny protein objects
+     */
     bulkTiny(...prot_ids: string[]): Promise<void>;
+    /**
+     * Search the proteins using gene names, protein name and keywords given by UniProt.
+     *
+     * This method only search in the tiny container !
+     *
+     * @param query String or Regex
+     *
+     * @returns Array of protein IDs matching the query
+     */
     searchByAnnotation(query: string | RegExp): string[];
+    /**
+     * Get a tiny protein object. Does not fetch from Internet when the protein isn't present !
+     */
     getTiny(id: string): TinyProtein;
+    /**
+     * Get tiny protein objects. If not present, fetch them.
+     */
+    getOrFetchTiny(...ids: string[]): Promise<TinyProtein[]>;
+    /**
+     * Clear container data.
+     */
     clear(): void;
+    /**
+    * Micro-service omega-topology-uniprot URL
+    */
+    uniprot_url: string;
 }
+export default UniprotContainer;
 export interface TinyProtein {
     accession: string;
     id: string;
@@ -45,7 +92,7 @@ export interface UniprotProtein {
     };
     gene: {
         name: UniprotValueEvidenceObject;
-        olnNames: UniprotValueEvidenceObject[];
+        olnNames?: UniprotValueEvidenceObject[];
     }[];
     comments: {
         type: string;
@@ -126,4 +173,3 @@ interface UniprotDbReference {
 declare type UniprotEvidences = {
     code: string;
 }[];
-export {};
