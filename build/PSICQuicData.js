@@ -37,8 +37,100 @@ class PSQData {
             throw new Error("Uncorrect number of tabulated fields on input [" + this.data.length + "] at:\n" + raw);
         }
     }
+    /** Create a new PSQData from a JavaScript object, not from a real MI Tab line */
     static create(fake) {
-        const line = `${fake.id1}\t${fake.id2}\t-\t-\t-\t-\t${fake.mi_ids.map(e => e.startsWith('MI:') ? e : "MI:" + e).join('|')}\t-\t${fake.pubmed_ids.join('|')}\t${fake.tax_ids.join('|')}\t${fake.tax_ids.join('|')}\t-\t-\t-\t-`;
+        let line = "";
+        const sep = "\t";
+        const addEmpty = (line, with_sep = true) => line + "-" + (with_sep ? sep : "");
+        // ID 1
+        line += fake.id1.includes(':') ? fake.id1 : 'uniprotkb:' + fake.id1;
+        line += sep;
+        // ID 2
+        line += fake.id2.includes(':') ? fake.id2 : 'uniprotkb:' + fake.id2;
+        line += sep;
+        // ALTERNATIVE 1
+        if (fake.alternatives_id1 && fake.alternatives_id1.length) {
+            line += fake.alternatives_id1.join('|');
+            line += sep;
+        }
+        else {
+            line = addEmpty(line);
+        }
+        // ALTERNATIVE 2
+        if (fake.alternatives_id2 && fake.alternatives_id2.length) {
+            line += fake.alternatives_id2.join('|');
+            line += sep;
+        }
+        else {
+            line = addEmpty(line);
+        }
+        // ALIAS 1
+        if (fake.aliases_id1 && fake.aliases_id1.length) {
+            line += fake.aliases_id1.join('|');
+            line += sep;
+        }
+        else {
+            line = addEmpty(line);
+        }
+        // ALIAS 2
+        if (fake.aliases_id2 && fake.aliases_id2.length) {
+            line += fake.aliases_id2.join('|');
+            line += sep;
+        }
+        else {
+            line = addEmpty(line);
+        }
+        // INTERACTION DET METHOD (must NOT contain psi-mi...)
+        line += fake.mi_ids.map(e => e.startsWith('MI:') ? e : "MI:" + e).map(e => `psi-mi:"${e}"`).join('|');
+        line += sep;
+        // FIRST AUTHOR
+        if (fake.first_authors && fake.first_authors.length) {
+            line += fake.first_authors.join('|');
+            line += sep;
+        }
+        else {
+            line = addEmpty(line);
+        }
+        // PUBLICATION IDENTIFIER
+        line += fake.pubmed_ids.map(e => e.includes(':') ? e : 'pubmed:' + e).join('|');
+        line += sep;
+        // TAXID 1
+        line += fake.tax_ids.map(t => t.includes(':') ? t : "taxid:" + t).join('|');
+        line += sep;
+        // TAXID 2
+        line += fake.tax_ids.map(t => t.includes(':') ? t : "taxid:" + t).join('|');
+        line += sep;
+        // INTERACTION TYPES
+        if (fake.interaction_types && fake.interaction_types.length) {
+            line += fake.interaction_types.join('|');
+            line += sep;
+        }
+        else {
+            line = addEmpty(line);
+        }
+        // SOURCE DATABASES
+        if (fake.source_dbs && fake.source_dbs.length) {
+            line += fake.source_dbs.join('|');
+            line += sep;
+        }
+        else {
+            line = addEmpty(line);
+        }
+        // INTERACTION IDENTIFIER(S)
+        if (fake.interaction_identifiers && fake.interaction_identifiers.length) {
+            line += fake.interaction_identifiers.join('|');
+            line += sep;
+        }
+        else {
+            line = addEmpty(line);
+        }
+        // CONFIDENCE SCORE
+        if (fake.confidence_scores && fake.confidence_scores.length) {
+            line += fake.confidence_scores.join('|');
+        }
+        else {
+            line = addEmpty(line, false);
+        }
         return new PSQData(line);
     }
     /** The 2 protein IDs present in the line */

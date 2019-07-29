@@ -18,6 +18,7 @@ export declare class PSQData {
      * @param keep_raw If the line is meant to be saved in raw property
      */
     constructor(raw: string, keep_raw?: boolean);
+    /** Create a new PSQData from a JavaScript object, not from a real MI Tab line */
     static create(fake: ArtefactualMitabData): PSQData;
     /** The 2 protein IDs present in the line */
     readonly ids: [string, string];

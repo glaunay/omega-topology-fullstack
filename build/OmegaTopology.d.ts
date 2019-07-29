@@ -23,11 +23,36 @@ export interface ArtefactalEdgeData {
     support?: PSQData[];
 }
 export interface ArtefactualMitabData {
+    /** Accession UniProt number of protein 1 */
     id1: string;
+    /** Accession UniProt number of protein 2 */
     id2: string;
+    /** Taxonomic IDs */
     tax_ids: string[];
+    /** MI IDs (only MI:xxxx is required) */
     mi_ids: string[];
+    /** Pubmed IDs */
     pubmed_ids: string[];
+    /** Alternative IDs for protein 1; Format must be "database:identifier" */
+    alternatives_id1?: string[];
+    /** Alternative IDs for protein 2; Format must be "database:identifier" */
+    alternatives_id2?: string[];
+    /** Aliases for protein 1; Format must be "database:identifier" */
+    aliases_id1?: string[];
+    /** Aliases for protein 2; Format must be "database:identifier" */
+    aliases_id2?: string[];
+    /**
+     * Free text **EXCEPT `\t`**.
+     */
+    first_authors?: string[];
+    /** Interaction types; Format must be "database:identifier" */
+    interaction_types?: string[];
+    /** Interaction identifiers; Format must be "database:identifier" */
+    interaction_identifiers?: string[];
+    /** Source databases; Format must be "database:identifier" */
+    source_dbs?: string[];
+    /** Confidence score; Format must be "scoreType:value" */
+    confidence_scores?: string[];
 }
 /**
  * Store all informations about a interolog network.
@@ -230,7 +255,7 @@ export default class OmegaTopology {
      * in order to see the new artefactal edge.
      * @param edgeData
      */
-    addArtefactualEdge(edgeData: ArtefactalEdgeData): void;
+    protected addArtefactualEdge(edgeData: ArtefactalEdgeData): void;
     /**
      * Make a node visible.
      * Warning: This function is NOT at constant complexity.
@@ -336,10 +361,10 @@ export default class OmegaTopology {
     readonly uniprot_container: UniprotContainer;
     uniprot_url: string;
     /**
-     * Create artefactal data + mitab
+     * Create an artefactal link, with additionnal interaction support.
      *
-     * @param edgeData
-     * @param mitabs
+     * You must rebuild the graph with `.constructGraph()`
+     * in order to see the new artefactal edge.
      */
     createArtefactual(edgeData: ArtefactalEdgeData, mitabs?: ArtefactualMitabData[]): void;
     readonly taxomic_id: string;

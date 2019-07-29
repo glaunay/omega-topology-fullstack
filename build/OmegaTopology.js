@@ -735,10 +735,10 @@ class OmegaTopology {
     }
     /* --- UTILITIES --- */
     /**
-     * Create artefactal data + mitab
+     * Create an artefactal link, with additionnal interaction support.
      *
-     * @param edgeData
-     * @param mitabs
+     * You must rebuild the graph with `.constructGraph()`
+     * in order to see the new artefactal edge.
      */
     createArtefactual(edgeData, mitabs = []) {
         if (mitabs.length) {

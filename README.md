@@ -507,7 +507,45 @@ for (const [nodes, data] of topology.links) {
 
 ### Add artefactual data
 
-TODO
+You can add "fakes" edges and nodes in the network. A fake edge is an edge that is destroyed in a object rebuild.
+
+The method `createArtefactual(edgeData: ArtefactalEdgeData, mitabs?: ArtefactualMitabData[])` is built for that, and create one additionnal edge. If the linked nodes does not exists, so they're created too.
+
+In order to see the additionnal edge, you must reconstruct the graph with `.constructGraph()` after.
+
+```ts
+let topo: OmegaTopology;
+
+// Defining specification of the proteins and specie
+const id1 = "P14292";
+const id2 = "P58393";
+const TAXID_SPECIE = "13832";
+
+// Create a edge with two interaction supports
+topo.createArtefactual({ /** First, the edge data */
+    source: id1,
+    target: id2
+}, [{ /** Then, optional interaction support */
+    // Specify the both IDs...
+    id1, 
+    id2, 
+    // Specifiy the specie of the interaction (required)
+    tax_ids: [TAXID_SPECIE],
+    // Specify the detection method (required)
+    mi_ids: ["MI:0676"],
+    // Specify the publication (required)
+    pubmed_ids: ["2482048"]
+}, {
+    id1,
+    id2,
+    tax_ids: [TAXID_SPECIE],
+    mi_ids: ["0114"],
+    pubmed_ids: ["449221"]
+}]);
+
+// Reconstructing the graph
+topo.constructGraph();
+```
 
 ---
 
