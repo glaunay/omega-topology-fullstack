@@ -1,19 +1,42 @@
 import md5 from "md5";
 import zip from "python-zip";
 import { ArtefactualMitabData } from "./OmegaTopology";
+import enumerate from "python-enumerate";
 
+const PSQ_FIELDS = ["idA", "idB", "altA", "altB", "aliasA", "aliasB", "interactionDetectionMethod", "firstAuthor", "pubid", "taxidA", "taxidB",
+"interactionTypes", "sourceDatabases", "interactionIdentifiers", "confidenceScore", "complexExpansion", "biologicalRoleA"
+, "biologicalRoleB", "experimentalRoleA", "experimentalRoleB", "interactorTypeA", "interactorTypeB", "xRefA", "xRefB",
+"xRefInteraction", "annotationA", "annotationB", "annotationInteraction", "taxidHost", "parameters", "creationDate",
+"updateDate", "checksumA", "checksumB", "negative", "featuresA", "featuresB", "stoichiometryA", "stoichiometryB",
+"identificationMethodA", "identificationMethodB"];
+
+const INDEXED_PSQ_FIELD = {};
+
+for (const [index, value] of PSQ_FIELDS) {
+    INDEXED_PSQ_FIELD[index] = value;
+    INDEXED_PSQ_FIELD[value] = index;
+}
+
+/**
+ * Hold the data of one MI Tab line
+ */
 export class PSQData {
+    /** Fields, indexed */
     public data: PSQDatum[];
+    /** Hash of the line */
     public hash: string;
+    /** Raw line (not stored if keep_raw is false) */
     public raw: string;
 
-    public static readonly PSQ_FIELDS = ["idA", "idB", "altA", "altB", "aliasA", "aliasB", "interactionDetectionMethod", "firstAuthor", "pubid", "taxidA", "taxidB",
-    "interactionTypes", "sourceDatabases", "interactionIdentifiers", "confidenceScore", "complexExpansion", "biologicalRoleA"
-    , "biologicalRoleB", "experimentalRoleA", "experimentalRoleB", "interactorTypeA", "interactorTypeB", "xRefA", "xRefB",
-    "xRefInteraction", "annotationA", "annotationB", "annotationInteraction", "taxidHost", "parameters", "creationDate",
-    "updateDate", "checksumA", "checksumB", "negative", "featuresA", "featuresB", "stoichiometryA", "stoichiometryB",
-    "identificationMethodA", "identificationMethodB"];
+    public static readonly PSQ_FIELDS = PSQ_FIELDS;
+    public static readonly INDEXED_PSQ_FIELDS = INDEXED_PSQ_FIELD;
 
+    /**
+     * Build a new PSQData object with a raw MI Tab line.
+     * 
+     * @param raw Raw line
+     * @param keep_raw If the line is meant to be saved in raw property
+     */
     constructor(raw: string, keep_raw = false) {
         this.data = raw.split(/\t+/g).filter(str => str.trim().length > 0).map(str => new PSQDatum(str));
         this.hash = md5(raw);
@@ -22,10 +45,6 @@ export class PSQData {
         }
 
         if (this.data.length !== 15 && this.data.length !== 42) {
-            // for (const [i, e] of enumerate(this.data)) {
-            //     console.log(`[${i}] ${e}`);
-            // }
-
             throw new Error("Uncorrect number of tabulated fields on input [" + this.data.length + "] at:\n" + raw);
         }
     }
@@ -35,10 +54,14 @@ export class PSQData {
         return new PSQData(line);
     }
 
-    get ids() {
+    /** The 2 protein IDs present in the line */
+    get ids() : [string, string] {
         return [this.data[0].value.split(':', 2).pop(), this.data[1].value.split(':', 2).pop()];
     }
 
+    /**
+     * Test if two instances of PSQData are equals
+     */
     equal(other: PSQData) : boolean {
         return this.hash === other.hash;
     }
@@ -51,10 +74,18 @@ export class PSQData {
         return "PSQData";
     }
 
+    /**
+     * @alias species
+     * 
+     * Taxonomic IDs of the two interactors
+     */
     get taxid() {
         return [this.data[9].content[0][1], this.data[10].content[0][1]] as [string, string];
     }
 
+    /**
+     * Publication ID of the interaction
+     */
     get pmid() {
         for (const field of this.data[8].data) {
             if (field.type === "pubmed:") {
@@ -65,18 +96,32 @@ export class PSQData {
         return this.data[8].data[0].value;
     }
 
+    /** 
+     * Source database of the interaction
+     */    
     get source() {
         return this.data[12].data[0].annotation ? this.data[12].data[0].annotation : this.data[12].data[0].value;
     }
 
+    /** 
+     * Detection method of this interaction
+     */
     get interactionDetectionMethod() {
         return this.data[6].data[0].value;
     }
 
+    /** 
+     * @alias taxid
+     * 
+     * Species of the two interactors (taxids)
+     */
     get species() {
         return [this.data[9].data[0].value, this.data[10].data[0].value];
     }
 
+    /**
+     * Like species, but with the annotation, not only the name
+     */
     get full_species() {
         let max_len = 0;
         let max_element = "";
@@ -107,6 +152,9 @@ export class PSQData {
         return undefined;
     }
 
+    /**
+     * UniProt IDs of the two interactors, but sorted 
+     */
     get uniprotPair() : [string, string] | undefined {
         const a = this.uniprotCapture(this.data[0].data[0].value!) || this.uniprotCapture(this.data[2].data[0].value!);
         const b = this.uniprotCapture(this.data[1].data[0].value!) || this.uniprotCapture(this.data[3].data[0].value!);
@@ -118,6 +166,9 @@ export class PSQData {
         return undefined;
     }
 
+    /** 
+     * JSON version of the PSQData
+     */
     get json() : string {
         const obj: {[fieldName: string]: string} = {};
 
@@ -128,54 +179,63 @@ export class PSQData {
         return JSON.stringify(obj);
     }
 
+    /**
+     * Interactors ID + alternates IDs
+     * 
+     * @returns Tuple<[type, id1][], [type, id2][]>
+     */
     get interactors() : [[string, string][], [string, string][]] {
         return [this.data[0].content.concat(this.data[2].content), this.data[1].content.concat(this.data[3].content)];
     }
 
-    swapInteractors(to: any, iSlot?: string) : void {
-        let consideredSlots = [0, 1];
-
-        if (iSlot) {
-            consideredSlots = [[ 'A', 'B' ].indexOf(iSlot)];
-            
-            if (consideredSlots[0] === -1) {
-                console.error("If you specify a slot to swap interactors, it must be A or B");
-                return;
-            }
+    /**
+     * Get a MI Tab **raw** information by index (splitted by '\t')
+     * @param i 
+     */
+    index(i: number) {
+        if (i in this.data) {
+            return this.data[i].toString();
         }
+        return undefined;
+    }
 
-        for (const i of consideredSlots) {
-            const psqDatum = this.data[i];
-            const alt = this.data[i + 2];
+    /**
+     * Get the MI Tab **raw** information of a field by his name.
+     * 
+     * You can explore field name in `PSQData.PSQ_FIELDS`.
+     * 
+     * @param name Name of the field to get
+     */
+    rawField(name: string) {
+        const field_index: number = PSQData.INDEXED_PSQ_FIELDS[name];
 
-            for (const [iField, cPsq] of alt.entries()) {
-                if (cPsq.value === to) {
-                    const _anon = cPsq;
-                    alt.data[iField] = psqDatum.data[0];
-                    psqDatum.data[0] = _anon;
-                    break;
-                }
-            }
+        if (field_index !== undefined) {
+            return this.index(field_index);
         }
+        return undefined;
     }
 
-    hasInteractors(mode = 'STRICT') : boolean {
-        //// TODO
-        return false;
-    }
+    /**
+     * Get the `PSQDatum` by his name.
+     * 
+     * You can explore field name in `PSQData.PSQ_FIELDS`.
+     * 
+     * @param name Name of the field to get
+     */
+    field(name: string) {
+        const field_index: number = PSQData.INDEXED_PSQ_FIELDS[name];
 
-    getNames() {
-        // TODO
-    }
-    
-    getPartners() {
-        // TODO
-        // Ask for partners
-        // Extract uniprot id
-        // fill a 'p->{ m_0, m_1, ..., m_n,}, where m's are uniprot match
+        if (field_index !== undefined) {
+            return this.data[field_index];
+        }
+        return undefined;
     }
 }
 
+/**
+ * One field of a MI Tab line.
+ * One field can held multiple values/informations (splitted by a pipe), this is why one "field" has multiple `PSQField`.
+ */
 export class PSQDatum {
     public data: PSQField[];
 
@@ -183,14 +243,11 @@ export class PSQDatum {
         this.data = colomn.split('|').map(e => new PSQField(e));
     }
 
+    /**
+     * Check equality between two fields.
+     */
     equal(datum: PSQDatum) {
-        for (const [d1, d2] of zip(this.data, datum.data)) {
-            if (!d1.equal(d2)) {
-                return false;
-            }
-        }
-
-        return true;
+        return this.toString() === datum.toString();
     }
 
     toString() : string {
@@ -205,36 +262,69 @@ export class PSQDatum {
         yield* this.data;
     }
 
+    /**
+     * Iterate through the PSQFields
+     */
     *entries() : IterableIterator<[number, PSQField]> {
-        let i = 0;
-
-        for (const e of this) {
-            yield [i, e];
-        }
+        yield* enumerate(this.data);
     }
 
+    /**
+     * Get field value where the type equals to key.
+     * 
+     * @param key Type of field
+     */
     at(key: string) {
         return [...this].filter(e => e.type === key + ":").map(e => e.value);
     }
 
+    /**
+     * Couples [type, value] of the PSQFields.
+     */
     get content() : [string, string][] {
         return [...this].map(e => [e.type!, e.value!]);
     }
 
+    /**
+     * Values inside the PSQFields, joined with a pipe.
+     */
     get value() {
         return this.data.map(e => e.value).join('|');
     }
 }
 
+/**
+ * Most basic datum of a MI Tab line.
+ * 
+ * Hold one information of one field.
+ */
 export class PSQField {
     // public static readonly fieldParser = /^([^:^"]+:){0,1}"{0,1}([^"\(]+)"{0,1}\({0,1}([^\)]+){0,1}\){0,1}$/;
     public static readonly fieldParser = /^([^:^"\n]+:)?"?([^"\(\n]+)"?\(?(.+?)?\)?$/;
 
     // protected raw: string;
+    /**
+     * Value of the field. Should (generally) be an ID
+     */
     public value: string;
+    /**
+     * Type of the field, like uniprot:.
+     * 
+     * The type contains the ":" !
+     */
     public type: string | undefined;
+    /**
+     * Annotation. Free text, can contain any type of characters (except tabulations or pipes).
+     */
     public annotation: string | undefined;
 
+    /**
+     * Construct the object with raw field data. Must not contain pipes.
+     * 
+     * A complete field (with possible multiple informations) should be only given to `PSQDatum` class !
+     * 
+     * @param element Field
+     */
     constructor(element: string) {
         const m = PSQField.fieldParser.exec(element);
         // this.raw = element;
@@ -251,6 +341,9 @@ export class PSQField {
         }
     }
 
+    /**
+     * Check equality between this field and another one.
+     */
     equal(field: PSQField) {
         return this.value === field.value && this.type === field.type && this.annotation === field.annotation;
     }

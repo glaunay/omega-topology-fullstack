@@ -11,16 +11,20 @@ export interface HomologChildren {
 }
 
 /**
- * Permet de lire un arbre d'homologie (tel uniprot_R6_homology.json) au format JSON.
+ * Allow to read a homology tree (like uniprot_R6_homology.json) formatted in JSON.
  */
-export default class HomologTree {
+export default class HomologyTree {
     public data: HomologInfo = {};
     protected init_promise: Promise<void> | undefined;
+    protected internal_tax_id: string;
 
     /**
-     * @param filename Le fichier ne doit être précisé SEULEMENT si l'environnement est node.js
+     * HomologyTree constructor.
+     * 
+     * @nodeonly If you specify a filename
+     * @param filename File should be specifiy **ONLY** if you are in Node.js environnement
      */
-    constructor(filename: string) {
+    constructor(filename?: string) {
         if (!filename) {
             this.init_promise = Promise.resolve();
         }
@@ -34,7 +38,17 @@ export default class HomologTree {
     
                     // Parse le JSON, l'enregistre dans this.data 
                     // et résoud la promesse sans aucune donnée
-                    resolve(void (this.data = JSON.parse(data)));
+                    const filedata = JSON.parse(data);
+
+                    if ("taxid" in filedata) {
+                        this.data = filedata.data;
+                        this.internal_tax_id = typeof filedata.taxid === 'string' ? filedata.taxid : String(filedata.taxid);
+                    }
+                    else {
+                        this.data = filedata;
+                    }
+
+                    resolve();
                 })
             });
         }
@@ -98,17 +112,26 @@ export default class HomologTree {
     }
 
     /**
-     * Serialize the HomologyTree object
+     * Current taxid of the loaded homology tree specie.
+     * Need a homology file that includes a taxid key.
+     * 
+     * @readonly
      */
-    serialize() : string {
-        return JSON.stringify({ data: this.data, version: 1 });
+    get taxid() {
+        return this.internal_tax_id;
     }
 
     /**
-     * Get the number of homologs of R6 proteins
+     * Serialize the HomologyTree object
+     */
+    serialize() : string {
+        return JSON.stringify({ data: this.data, taxid: this.taxid, version: 2 });
+    }
+
+    /**
+     * Number of homologs of R6 proteins
      *
      * @readonly
-     * @memberof HomologTree
      */
     get length() {
         return Object.keys(this.data).length;
@@ -118,16 +141,17 @@ export default class HomologTree {
      * Instanciate a new HomologyTree object from a serialized string
      * @param serialized 
      */
-    static from(serialized: string) : HomologTree {
-        const newobj = new HomologTree("");
+    static from(serialized: string) : HomologyTree {
+        const newobj = new HomologyTree("");
         const homolog_data = JSON.parse(serialized);
 
-        const supported = [1];
+        const supported = [2];
         if (!supported.includes(homolog_data.version)) {
             throw new Error("Unsupported HomologTree version: " + homolog_data.version);
         }
 
         newobj.data = homolog_data.data;
+        newobj.internal_tax_id = homolog_data.taxid;
         return newobj;
     }
 

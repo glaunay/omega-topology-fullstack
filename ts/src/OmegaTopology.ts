@@ -11,16 +11,17 @@ import md5 from 'md5';
 import PSICQuic from "./PSICQuic";
 import { PSQData } from "./PSICQuicData";
 
-interface NodeGraphComponent {
+export interface NodeGraphComponent {
     group: number;
     val: number;
 }
 
-interface SerializedOmegaTopology {
+export interface SerializedOmegaTopology {
     graph: Object;
     tree: string;
     homolog?: string;
-    version: number
+    version: number;
+    taxid?: string;
 }
 
 export interface ArtefactalEdgeData {
@@ -67,6 +68,8 @@ export default class OmegaTopology {
 
     protected go_terms = new GoTermsContainer;
     protected _uniprot_container: UniprotContainer;
+
+    protected taxid: string;
     
     /**
      * GRAPH
@@ -88,7 +91,7 @@ export default class OmegaTopology {
     constructor(
         homologyTree?: HomologTree, 
         mitabObj?: PSICQuic, 
-        protected uniprot_url?: string
+        uniprot_url?: string
     ) {
         this.hData = homologyTree;
         this.baseTopology = mitabObj ? mitabObj : new PSICQuic;
@@ -120,6 +123,9 @@ export default class OmegaTopology {
         }) as MDTree<HoParameterSet>;
         this.G = GraphJSON.read(obj.graph);
 
+        if (obj.taxid) {
+            this.taxid = obj.taxid;
+        }
         if (obj.homolog) {
             this.hData = HomologTree.from(obj.homolog);
         }
@@ -182,7 +188,8 @@ export default class OmegaTopology {
         const obj: SerializedOmegaTopology = {
             graph: GraphJSON.write(this.G),
             tree: this.ajdTree.serialize(),
-            version: 1
+            taxid: this.taxomic_id,
+            version: 1.1
         };
 
         if (with_homology_tree) {
@@ -203,7 +210,7 @@ export default class OmegaTopology {
             throw new Error("Object is not omegatopology serialization");
         }
 
-        const supported = [1];
+        const supported = [1, 1.1];
         if (!supported.includes(obj.version)) {
             throw new Error("Unsupported OmegaTopology version: " + obj.version);
         }
@@ -286,7 +293,7 @@ export default class OmegaTopology {
      * @param {HomologChildren} dataNewA
      * @param {HomologChildren} dataNewB
      */
-    addEdgeSet(dataNewA: HomologChildren, dataNewB: HomologChildren) : HoParameterSet[] {
+    protected addEdgeSet(dataNewA: HomologChildren, dataNewB: HomologChildren) : HoParameterSet[] {
         const newAelements = Object.keys(dataNewA).map(e => [md5(e), e, dataNewA[e]]) as [string, string, string[]][];
         const newBelements = Object.keys(dataNewB).map(e => [md5(e), e, dataNewB[e]]) as [string, string, string[]][];
         const added = [];
@@ -461,11 +468,11 @@ export default class OmegaTopology {
     /**
      * Prune and renew the graph.
      * 
-     * @param {number} [max_distance=5] If you want all the connex composants, use -1 or ±Infinity
+     * @param {number} [max_distance] If you want all the connex composants, use -1 or ±Infinity
      * @param {...string[]} seeds All the seeds you want to search
      * @returns {Graph}
      */
-    prune(max_distance: number = 5, ...seeds: string[]) : Graph {
+    prune(max_distance: number = Infinity, ...seeds: string[]) : Graph {
         this.constructGraph();
 
         let t = Date.now();
@@ -680,10 +687,17 @@ export default class OmegaTopology {
     }
 
     /**
-     * Number of visible nodes. (must have constructed graph with `.constructGraph()` before)
+     * Number of visible nodes.
      */
     get nodeNumber() : number {
-        return Object.keys(this.nodes).length;
+        const nodes = new Set;
+
+        for (const [n1, n2, ] of this.iterVisible()) {
+            nodes.add(n1);
+            nodes.add(n2);
+        }
+
+        return nodes.size;
     }
 
     /**
@@ -850,6 +864,14 @@ export default class OmegaTopology {
     /* --- UNIPROT DATA --- */
 
     async downloadGoTerms(...protein_ids: string[]) {
+        try {
+            if (fetch === undefined) {
+                throw new Error;
+            }
+        } catch (e) {
+            var fetch = require('node-fetch') as GlobalFetch['fetch'];
+        } 
+
         const req: ProtGOTerms = await fetch(this.uniprot_url + "/go", {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -857,6 +879,14 @@ export default class OmegaTopology {
         }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
 
         this.go_terms.add(req);
+    }
+
+    async downloadNeededGoTerms() {
+        // Get all proteins ids
+        const nodes = this.G.nodes();
+
+        // Bulk download
+        await this.downloadGoTerms(...nodes);
     }
 
     async getProteinInfos(protein_id: string) {
@@ -884,6 +914,14 @@ export default class OmegaTopology {
         return this._uniprot_container;
     }
 
+    get uniprot_url() {
+        return this.uniprot_container.uniprot_url;
+    }
+
+    set uniprot_url(v: string) {
+        this.uniprot_container.uniprot_url = v;
+    }
+
     
     /* --- UTILITIES --- */
 
@@ -902,6 +940,16 @@ export default class OmegaTopology {
         }
 
         this.addArtefactualEdge(edgeData);
+    }
+    
+    get taxomic_id() {
+        if (this.taxid) {
+            return this.taxid;
+        }
+        if (this.hData) {
+            return this.taxid = this.hData.taxid;
+        }
+        return undefined;
     }
     
     toString() : string {

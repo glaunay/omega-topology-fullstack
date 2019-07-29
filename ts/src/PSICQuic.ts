@@ -11,23 +11,23 @@ export default class PSICQuic {
     public records: PSQDataHolder = new ReversibleKeyMap;
 
     /**
-     * Registered publications.
+     * Registered publications. (I don't know what it is, please be comprehensive)
      */
     public registredPublications: { [pubId: string]: string } = {};
-    protected init_promise = Promise.resolve();
 
     /**
      * Creates an instance of PSICQuic.
      * @param {string} [mode="LOOSE"] >deprecated Unused.
      * @param {boolean} [keep_raw=false] Keep the raw line when creating PSQData children.
      */
-    constructor(protected mode = "LOOSE", protected keep_raw = false) { }
+    constructor(protected mode = "LOOSE", public keep_raw = false) { }
 
     /**
-     * Promise symbolizing the instance state. Resolved when ready.
+     * @deprecated
+     * Instance is already ready !
      */
     init() {
-        return this.init_promise;
+        return Promise.resolve();
     }
 
     /**
@@ -50,6 +50,10 @@ export default class PSICQuic {
 
     /**
      * Asynchronously read a Mitabfile. (use streams !)
+     * 
+     * @nodeonly Only for Node.js. Will fail if used inside a browser context.
+     * @rameater This function, used with a big file, will require a huge amount of RAM. 
+     * Make sure to use the V8 `--max-old-space-size={RAM}` parameter when starting the script.
      *
      * @param {string} file Filename
      * @param {boolean} [with_progress=true] Create a progress bar of current read state.
@@ -90,39 +94,18 @@ export default class PSICQuic {
     }
 
     /**
-     * @deprecated SHOULD MOVE IT
-     *
-     * @param {string[]} ids
-     */
-    protected static bulkGetWrap(ids: string[]) : any {
-        return { docs: ids.map(id => { id }) };
-    }
-
-    /**
-     * Clone current object. Warning, does NOT clone the records map, they will be shared.
-     */
-    clone() {
-        const newclone = new PSICQuic;
-        newclone.records = this.records;
-    }
-
-    /**
      * Add all the records of other to actual instance.
      *
      * @param {PSICQuic} other
      */
     plus(other: PSICQuic) {
         for (const [, value] of other.records) {
-            for (const line of value) {
-                if (this.checkPsqData(line)) {
-                    this.update(line);
-                }
-            }
+            this.add(...value);
         }
     }
 
     /**
-     * Check if PSQData is valid.
+     * Check if PSQData is valid and register publications inside it.
      *
      * @protected
      * @param {PSQData} psqDataObj
@@ -148,7 +131,7 @@ export default class PSICQuic {
     }
 
     /**
-     * Get the size of the records map.
+     * Size of the records map.
      */
     get length() : number {
         return this.records.size;
@@ -160,16 +143,6 @@ export default class PSICQuic {
 
     get [Symbol.toStringTag]() {
         return "PSICQuic";
-    }
-
-    /**
-     * Get a PSQData by index. 
-     * This is REALLY not recommanded, get using id instead !
-     * 
-     * @param {number} i Index
-     */
-    getByIndex(i: number) : PSQData {
-        return [].concat(...this.records.values())[i];
     }
 
     /**
@@ -204,12 +177,21 @@ export default class PSICQuic {
     }
 
     /**
-     * Get all the lines associated to couple [id1, id2].
-     *
+     * @deprecated Alias for `.getCouple()`.
+     * @alias .getCouple()
+     * @see .getCouple()
+     */
+    getLines(id1: string, id2: string) : PSQData[] {
+        return this.getCouple(id1, id2);
+    }
+
+    /**
+     * Get all the MI Tab lines and data associated to couple [id1, id2].
+     * 
      * @param {string} id1
      * @param {string} id2
      */
-    getLines(id1: string, id2: string) : PSQData[] {
+    getCouple(id1: string, id2: string) : PSQData[] {
         if (this.hasCouple(id1, id2)) {
             return this.records.get(id1, id2);
         }
@@ -217,19 +199,30 @@ export default class PSICQuic {
     }
 
     /**
-     * Register a PSQData in records.
-     *
-     * @param {PSQData} psq
+     * @deprecated Alias for `.add()` with the support of only one PSQData at each call.
+     * @alias .add()
+     * @see .add()
      */
     update(psq: PSQData) {
-        const [id1, id2] = psq.ids;
+        this.add(psq);
+    }
 
-        const actual_array = this.getLines(id1, id2);
+    /**
+     * Register a PSQData in records.
+     *
+     * @param psq MI Tab data (one, or mulitple data)
+     */
+    add(...psqs: PSQData[]) {
+        for (const psq of psqs) {
+            const [id1, id2] = psq.ids;
 
-        // Check if line already exists
-        if (actual_array.every(line => !line.equal(psq))) {
-            actual_array.push(psq);
-            this.records.set(id1, id2, actual_array);
+            const actual_array = this.getCouple(id1, id2);
+
+            // Check if line already exists
+            if (actual_array.every(line => !line.equal(psq))) {
+                actual_array.push(psq);
+                this.records.set(id1, id2, actual_array);
+            }
         }
     }
     
@@ -329,12 +322,11 @@ export default class PSICQuic {
         this.registredPublications = {};
     }
 
+    /** 
+     * Make a JSON dump
+     */
     json() {
         return '{"type" : "mitabResult", "data" : [' + [...this].map(e => e.json).join(',') + '] }';
-    }
-
-    dump() {
-        return this.toString();
     }
 
     /**
@@ -344,12 +336,11 @@ export default class PSICQuic {
      */
     protected parse(buffer: string[]) {
         for (const line of buffer) {
-            if (line.length === 0 || line.startsWith('#')) {
+            if (!line || line.startsWith('#')) {
                 continue;
             }
 
-            // ignoring encoder in JS
-            this.update(new PSQData(line, this.keep_raw));
+            this.add(new PSQData(line, this.keep_raw));
         }
     }
 
@@ -366,14 +357,22 @@ export default class PSICQuic {
 
         const d = new PSQData(line, this.keep_raw);
         if (added) added.push(d);
-        this.update(d);
+        this.add(d);
     } 
     
+    /**
+     * Return all the PubMed IDs presents in the records
+     */
     protected countPmid() {
         return new Set([...this].map(e => e.pmid!));
     }
 
-    topology(type = "uniprotID") : [Set<string>, Map<[string, string], PSQData[]>] {
+    /**
+     * Get all the protein IDs and the "links" currently makables with current records.
+     * 
+     * @returns Tuple<Set of protein accession n., Map<ProtID1, ProtID2, MITab data>>
+     */
+    topology() : [Set<string>, Map<[string, string], PSQData[]>] {
         const nodes = new Set<string>();
         const edges = new Map<[string, string], PSQData[]>();
 
@@ -399,15 +398,17 @@ export default class PSICQuic {
         return [nodes, edges];
     }
 
+    /**
+     * @deprecated
+     */
     getBiomolecules(type = 'uniprot') {
         if (type === 'uniprot') {
             let l: string[] = [];
 
             for (const p of this) {
-                console.log(p);
                 const up = p.uniprotPair;
                 if (up) {
-                    l = l.concat(up);
+                    l.push(...up);
                 }
             }
 
@@ -415,7 +416,14 @@ export default class PSICQuic {
         }
     }
 
+    /**
+     * Create a new PSICQuic object with current instance data who match the predicate or who match the given uniprot ids
+     * @param uniprot 
+     * @param predicate 
+     */
     filter(uniprot: string[] = [], predicate?: Function) {
+        this.records.getAllFrom
+
         const target = new PSICQuic;
 
         if (uniprot.length) {
@@ -429,14 +437,14 @@ export default class PSICQuic {
 
                 up = new Set(up);
                 if (setIntersection(up, buffer).size) {
-                    target.update(data);
+                    target.add(data);
                 }
             }
         }
         
         if (predicate) {
             for (const data of this) {
-                if (predicate(data)) target.update(data);
+                if (predicate(data)) target.add(data);
             }
         }
 
