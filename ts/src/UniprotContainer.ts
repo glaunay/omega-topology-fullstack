@@ -72,20 +72,31 @@ export class UniprotContainer {
         }
     }
 
+    searchByAnnotation(query: string | RegExp, match_type?: "all") : string[];
+    searchByAnnotation(query: string | RegExp, match_type?: "classified") : ProteinMatches;
     /**
-     * Search the proteins using gene names, protein name and keywords given by UniProt.
+     * Search the proteins using accession number, gene names, protein name and keywords given by UniProt.
      * 
      * This method only search in the tiny container !
      * 
      * @param query String or Regex
      * 
+     * @param match_type [all] By default (`all`), returns every matched result into a single array.
+     * If `match_type === "classified"`, return a `ProteinMatches` object. 
+     * With this mode, a protein could appeer more than once, if it match multiple categories.
+     * 
      * @returns Array of protein IDs matching the query
      */
-    searchByAnnotation(query: string | RegExp) : string[] {
+    searchByAnnotation(query: string | RegExp, match_type: "all" | "classified" = "all") {
+        return match_type === "all" ? this.searchByAnnotationAll(query) : this.searchByAnnotationCategory(query);
+    }
+
+    protected searchByAnnotationAll(query: string | RegExp) : string[] {
         const matching = new Set<string>();
 
         for (const [prot_id, prot] of this.tiny) {
             if (
+                prot.accession.match(query) ||
                 prot.protein_names.some(e => !!e.match(query)) || 
                 prot.gene_names.some(e => !!e.match(query)) ||
                 prot.keywords.some(e => !!e.match(query))
@@ -95,6 +106,32 @@ export class UniprotContainer {
         }
 
         return [...matching];
+    }
+
+    protected searchByAnnotationCategory(query: string | RegExp) : ProteinMatches {
+        const p: ProteinMatches = {
+            keywords: [],
+            accession: [],
+            gene_names: [],
+            protein_names: []
+        };
+
+        for (const [prot_id, prot] of this.tiny) {
+            if (prot.accession.match(query)) {
+                p.accession.push(prot_id);
+            }
+            if (prot.protein_names.some(e => !!e.match(query))) {
+                p.protein_names.push(prot_id);
+            }
+            if (prot.gene_names.some(e => !!e.match(query))) {
+                p.gene_names.push(prot_id);
+            }
+            if (prot.keywords.some(e => !!e.match(query))) {
+                p.keywords.push(prot_id);
+            }
+        }
+
+        return p;
     }
 
     /**
@@ -138,6 +175,13 @@ export class UniprotContainer {
 }
 
 export default UniprotContainer;
+
+export interface ProteinMatches {
+    accession: string[];
+    keywords: string[];
+    gene_names: string[];
+    protein_names: string[];
+}
 
 export interface TinyProtein {
     accession: string;

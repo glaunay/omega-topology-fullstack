@@ -29,16 +29,10 @@ export declare class UniprotContainer {
      * Download tiny protein objects
      */
     bulkTiny(...prot_ids: string[]): Promise<void>;
-    /**
-     * Search the proteins using gene names, protein name and keywords given by UniProt.
-     *
-     * This method only search in the tiny container !
-     *
-     * @param query String or Regex
-     *
-     * @returns Array of protein IDs matching the query
-     */
-    searchByAnnotation(query: string | RegExp): string[];
+    searchByAnnotation(query: string | RegExp, match_type?: "all"): string[];
+    searchByAnnotation(query: string | RegExp, match_type?: "classified"): ProteinMatches;
+    protected searchByAnnotationAll(query: string | RegExp): string[];
+    protected searchByAnnotationCategory(query: string | RegExp): ProteinMatches;
     /**
      * Get a tiny protein object. Does not fetch from Internet when the protein isn't present !
      */
@@ -57,6 +51,12 @@ export declare class UniprotContainer {
     uniprot_url: string;
 }
 export default UniprotContainer;
+export interface ProteinMatches {
+    accession: string[];
+    keywords: string[];
+    gene_names: string[];
+    protein_names: string[];
+}
 export interface TinyProtein {
     accession: string;
     id: string;
