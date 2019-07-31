@@ -284,7 +284,16 @@ export default class OmegaTopology {
      *
      * @param query Query, in string or regexp
      */
-    findProteinsInGraphByAnnotation(query: string | RegExp): string[];
+    searchInGraphByAnnotation(query: string | RegExp): string[];
+    /**
+     * Find proteins matching the query (in their annotation) and returns their IDs,
+     * classified with where they've matched.
+     *
+     * Graph must have be constructed with `.constructGraph()` !
+     *
+     * @param query Query, in string or regexp
+     */
+    advancedSearchInGraphByAnnotation(query: string | RegExp): import("./UniprotContainer").ProteinMatches;
     /**
      * Number of visible edges.
      */

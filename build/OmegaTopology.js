@@ -529,12 +529,31 @@ class OmegaTopology {
      *
      * @param query Query, in string or regexp
      */
-    findProteinsInGraphByAnnotation(query) {
+    searchInGraphByAnnotation(query) {
         // Recherche
         const ids = this.uniprot_container.searchByAnnotation(query);
         // Filtre en fonction des noeuds présents dans le graphe
         const id_graph_set = new Set(this.nodes.map(e => e[0]));
         return ids.filter(id => id_graph_set.has(id));
+    }
+    /**
+     * Find proteins matching the query (in their annotation) and returns their IDs,
+     * classified with where they've matched.
+     *
+     * Graph must have be constructed with `.constructGraph()` !
+     *
+     * @param query Query, in string or regexp
+     */
+    advancedSearchInGraphByAnnotation(query) {
+        // Recherche
+        const ids = this.uniprot_container.searchByAnnotation(query, "classified");
+        // Filtre en fonction des noeuds présents dans le graphe
+        const id_graph_set = new Set(this.nodes.map(e => e[0]));
+        // Filtering every array
+        for (const key of Object.keys(ids)) {
+            ids[key] = ids[key].filter(id => id_graph_set.has(id));
+        }
+        return ids;
     }
     /**
      * Number of visible edges.
