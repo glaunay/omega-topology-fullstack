@@ -172,7 +172,7 @@ export default class OmegaTopology {
      */
     fromDownload(url: string) {
         return this.init_promise = fetch(url)
-            .then(r => r.json())
+            .then(r => r.ok ? r.json() : r.json().then(o => Promise.reject(o)))
             .then(obj => {
                 OmegaTopology.checkSerializedObject(obj);
                 this.initFromSerialized(obj);

@@ -87,6 +87,13 @@ This library fits different usages, from building a network from scratch to comp
 
 During all this examples, the specie used will be named as `R6`.
 
+### Building examples
+
+The 3 following usages will talk about how build the interolog network.
+Here's a sample résumé.
+
+![short version of building network](assets/schema_build.png)
+
 ### Building a interolog network from homology file and interaction data
 You can build the full OmegaTopology object straight from base files.
 
