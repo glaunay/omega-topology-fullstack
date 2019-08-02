@@ -6,6 +6,12 @@ import UniprotContainer from './UniprotContainer';
 import { MDTree } from './MDTree';
 import PSICQuic from "./PSICQuic";
 import { PSQData } from "./PSICQuicData";
+export interface OldTrim {
+    identity: number;
+    e_value: number;
+    similarity: number;
+    coverage: number;
+}
 export interface NodeGraphComponent {
     group: number;
     val: number;
@@ -14,6 +20,7 @@ export interface SerializedOmegaTopology {
     graph: Object;
     tree: string;
     homolog?: string;
+    last_trim?: OldTrim;
     version: number;
     taxid?: string;
 }
@@ -27,8 +34,10 @@ export interface ArtefactualMitabData {
     id1: string;
     /** Accession UniProt number of protein 2 */
     id2: string;
-    /** Taxonomic IDs */
-    tax_ids: string[];
+    /** Taxonomic ID of the protein 1 */
+    tax_id1: string | string[];
+    /** Taxonomic ID for protein 2. You can omit this field if the tax id is the same of the protein 1. */
+    tax_id2?: string | string[];
     /** MI IDs (only MI:xxxx is required) */
     mi_ids: string[];
     /** Pubmed IDs */
@@ -81,6 +90,7 @@ export default class OmegaTopology {
     protected go_terms: GoTermsContainer;
     protected _uniprot_container: UniprotContainer;
     protected taxid: string;
+    last_fixed_trim: OldTrim;
     /**
      * GRAPH
      * Node type: string

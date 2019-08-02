@@ -11,6 +11,8 @@ import md5 from 'md5';
 import PSICQuic from "./PSICQuic";
 import { PSQData } from "./PSICQuicData";
 
+export interface OldTrim { identity: number, e_value: number, similarity: number, coverage: number };
+
 export interface NodeGraphComponent {
     group: number;
     val: number;
@@ -20,6 +22,7 @@ export interface SerializedOmegaTopology {
     graph: Object;
     tree: string;
     homolog?: string;
+    last_trim?: OldTrim;
     version: number;
     taxid?: string;
 }
@@ -37,8 +40,10 @@ export interface ArtefactualMitabData {
     id1: string;
     /** Accession UniProt number of protein 2 */
     id2: string;
-    /** Taxonomic IDs */
-    tax_ids: string[];
+    /** Taxonomic ID of the protein 1 */
+    tax_id1: string | string[];
+    /** Taxonomic ID for protein 2. You can omit this field if the tax id is the same of the protein 1. */
+    tax_id2?: string | string[];
     /** MI IDs (only MI:xxxx is required) */
     mi_ids: string[];
     /** Pubmed IDs */
@@ -100,6 +105,10 @@ export default class OmegaTopology {
     protected _uniprot_container: UniprotContainer;
 
     protected taxid: string;
+
+    public last_fixed_trim: OldTrim = {
+        identity: 0, e_value: 1, similarity: 0, coverage: 0
+    };
     
     /**
      * GRAPH
@@ -158,6 +167,9 @@ export default class OmegaTopology {
         }
         if (obj.homolog) {
             this.hData = HomologTree.from(obj.homolog);
+        }
+        if (obj.last_trim) {
+            this.last_fixed_trim = obj.last_trim;
         }
 
         return this;
@@ -219,6 +231,7 @@ export default class OmegaTopology {
             graph: GraphJSON.write(this.G),
             tree: this.ajdTree.serialize(),
             taxid: this.taxomic_id,
+            last_trim: this.last_fixed_trim,
             version: 1.1
         };
 
@@ -454,6 +467,10 @@ export default class OmegaTopology {
         logged_id = "",
         destroy_identical = false
     } = {}) : [number, number, any] {
+        if (definitive) {
+            this.last_fixed_trim = { identity: idPct, similarity: simPct, coverage: cvPct, e_value: eValue };
+        }
+
         let nDel = 0;
         let nTot = 0;
 

@@ -30,7 +30,7 @@ const psq = new PSICQuic;
         id1, 
         id2, 
         // Specifiy the specie of the interaction (required)
-        tax_ids: [TAXID_SPECIE],
+        tax_id1: TAXID_SPECIE,
         // Specify the detection method (required)
         mi_ids: ["MI:0676"],
         // Specify the publication (required)
@@ -38,7 +38,7 @@ const psq = new PSICQuic;
     }, {
         id1,
         id2,
-        tax_ids: [TAXID_SPECIE],
+        tax_id1: TAXID_SPECIE,
         mi_ids: ["0114"],
         pubmed_ids: ["449221"]
     }]);

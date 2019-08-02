@@ -15,6 +15,7 @@ const python_zip_1 = __importDefault(require("python-zip"));
 const md5_1 = __importDefault(require("md5"));
 const PSICQuic_1 = __importDefault(require("./PSICQuic"));
 const PSICQuicData_1 = require("./PSICQuicData");
+;
 /**
  * Store all informations about a interolog network.
  *
@@ -40,6 +41,9 @@ class OmegaTopology {
         /** True if mitab is loaded */
         this.mitab_loaded = false;
         this.go_terms = new GoTermsContainer_1.default;
+        this.last_fixed_trim = {
+            identity: 0, e_value: 1, similarity: 0, coverage: 0
+        };
         this.hData = homologyTree;
         this.baseTopology = mitabObj ? mitabObj : new PSICQuic_1.default;
         this._uniprot_container = new UniprotContainer_1.default(uniprot_url);
@@ -72,6 +76,9 @@ class OmegaTopology {
         }
         if (obj.homolog) {
             this.hData = HomologyTree_1.default.from(obj.homolog);
+        }
+        if (obj.last_trim) {
+            this.last_fixed_trim = obj.last_trim;
         }
         return this;
     }
@@ -124,6 +131,7 @@ class OmegaTopology {
             graph: graphlib_1.json.write(this.G),
             tree: this.ajdTree.serialize(),
             taxid: this.taxomic_id,
+            last_trim: this.last_fixed_trim,
             version: 1.1
         };
         if (with_homology_tree) {
@@ -319,6 +327,9 @@ class OmegaTopology {
      * @returns [number of deleted edges, total edges count]
      */
     trimEdges({ simPct = 0, idPct = 0, cvPct = 0, eValue = 1, exp_det_methods = [], taxons = [], definitive = false, logged_id = "", destroy_identical = false } = {}) {
+        if (definitive) {
+            this.last_fixed_trim = { identity: idPct, similarity: simPct, coverage: cvPct, e_value: eValue };
+        }
         let nDel = 0;
         let nTot = 0;
         const logged = [];

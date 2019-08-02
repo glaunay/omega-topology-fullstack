@@ -95,10 +95,19 @@ class PSQData {
         line += fake.pubmed_ids.map(e => e.includes(':') ? e : 'pubmed:' + e).join('|');
         line += sep;
         // TAXID 1
-        line += fake.tax_ids.map(t => t.includes(':') ? t : "taxid:" + t).join('|');
+        const taxid_1 = typeof fake.tax_id1 === 'string' ? [fake.tax_id1] : fake.tax_id1;
+        line += taxid_1.map(t => t.includes(':') ? t : "taxid:" + t).join('|');
         line += sep;
         // TAXID 2
-        line += fake.tax_ids.map(t => t.includes(':') ? t : "taxid:" + t).join('|');
+        let taxid_2;
+        // Si il n'est pas défini, on utilise par défault le même que pour 1
+        if (!fake.tax_id2) {
+            taxid_2 = taxid_1;
+        }
+        else {
+            taxid_2 = typeof fake.tax_id2 === 'string' ? [fake.tax_id2] : fake.tax_id2;
+        }
+        line += taxid_2.map(t => t.includes(':') ? t : "taxid:" + t).join('|');
         line += sep;
         // INTERACTION TYPES
         if (fake.interaction_types && fake.interaction_types.length) {
