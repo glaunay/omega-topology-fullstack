@@ -106,6 +106,7 @@ export default class OmegaTopology {
 
     protected taxid: string;
 
+    /** Register a few parameters of the last trimEdges() call that have been made with the definitive flag. */
     public last_fixed_trim: OldTrim = {
         identity: 0, e_value: 1, similarity: 0, coverage: 0
     };

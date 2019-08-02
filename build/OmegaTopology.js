@@ -41,6 +41,7 @@ class OmegaTopology {
         /** True if mitab is loaded */
         this.mitab_loaded = false;
         this.go_terms = new GoTermsContainer_1.default;
+        /** Register a few parameters of the last trimEdges() call that have been made with the definitive flag. */
         this.last_fixed_trim = {
             identity: 0, e_value: 1, similarity: 0, coverage: 0
         };

@@ -90,6 +90,7 @@ export default class OmegaTopology {
     protected go_terms: GoTermsContainer;
     protected _uniprot_container: UniprotContainer;
     protected taxid: string;
+    /** Register a few parameters of the last trimEdges() call that have been made with the definitive flag. */
     last_fixed_trim: OldTrim;
     /**
      * GRAPH
